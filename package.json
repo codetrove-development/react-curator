@@ -1,0 +1,38 @@
+{
+  "name": "snappy-grid-react",
+  "version": "1.0.4-alpha",
+  "description": "React Draggable Grid using Snapper Core library",
+  "main": "index.js",
+  "unpkg": "dist/snappy-grid-react.min.js",
+  "scripts": {
+    "build-dev": "webpack --mode development",
+    "build-prod": "webpack --mode production"
+  },
+  "prepublish": "webpack --mode production",
+  "author": "Code Trove Limited",
+  "license": "Code Trove Product License",
+  "package-name": "git+ssh://git@github.com:codetrove-development/snappy-grid-react<repo>.git",
+  "dependencies": {
+    "react": "^16.5.2",
+    "react-dom": "^16.2.0",
+    "react-draggable": "^3.0.5",
+    "snappy-grid-core": "^1.0.10-alpha"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.4",
+    "webpack": "4.19.1",
+    "webpack-cli": "^2.1.4"
+  },
+  "files": [
+    "dist",
+    "src",
+    "build"
+  ]
+}

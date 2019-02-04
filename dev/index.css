@@ -1,0 +1,60 @@
+html, body, #root, #page, .snappy-grid, .grid-item-holder {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.snappy-grid {
+    width: 80%;
+    height: 80%;
+    
+}
+
+.grid-item-holder {
+    border: 1px solid;
+}
+
+.grid-item {
+    background: purple;
+    border: 2px solid darkblue;
+}
+
+.grid-item.glued {
+    background: green;
+    border: 2px solid lightgreen;
+}
+
+.resize-handle {
+    width: 10px;
+    height: 10px;
+    background: red;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    cursor: nwse-resize;
+}
+
+ul#page-options {
+    width: 100%;
+    height: 50px;
+    display: block;
+    overflow: hidden;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+li.page-button {
+    padding: 5px 15px;
+    border: 1px solid #eee;
+    width: auto;
+    display: block;
+    float: left;
+    cursor: pointer;
+    font-size: 1.2em;
+    border-radius: 4px;
+}
+
+li.page-button:hover {
+    background: #eee;
+}

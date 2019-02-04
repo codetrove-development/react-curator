@@ -1,0 +1,34 @@
+{
+  "name": "snappy-grid-react-dev",
+  "version": "1.0.0-alpha",
+  "description": "",
+  "repository": {},
+  "main": "snappy-grid-react-dev.js",
+  "scripts": {
+    "build-dev-page": "webpack --mode development",
+    "dev-server": "webpack-dev-server --mode development --open"
+  },
+  "author": "Code Trove Limited",
+  "license": "Code Trove Product License",
+  "dependencies": {
+    "react": "^16.5.2",
+    "react-dom": "^16.2.0",
+    "react-draggable": "^3.0.5",
+    "snappy-algo": "^1.0.8-alpha",
+    "snappy-grid-core": "^1.0.11-alpha",
+    "snappy-grid-react": "^1.0.4-alpha"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.4",
+    "css-loader": "^0.28.11",
+    "html-webpack-plugin": "^3.0.6",
+    "style-loader": "^0.20.3",
+    "webpack": "4.19.1",
+    "webpack-cli": "^2.1.4",
+    "webpack-dev-server": "^3.1.14"
+  }
+}
