@@ -4,12 +4,12 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const baseConfig = {
   context: __dirname,
   entry: {
-    SnappyGrid: './src/SnappyGrid'
+    SnappyGrid: './src/Curator.jsx'
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.jsx$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader"
@@ -37,9 +37,9 @@ const devConfig = merge( baseConfig, {
   devtool: 'source-map',
   output: {
     path: __dirname + "/build",
-    filename: "snappy-grid-react.js",
+    filename: "react-curator.js",
     libraryTarget: "umd",
-    library: "SnappyGridReact"
+    library: "Curator"
   }
 })
 
@@ -60,9 +60,9 @@ const prodConfig = merge( baseConfig, {
   },
   output: {
     path: __dirname + "/dist",
-    filename: "snappy-grid-react.min.js",
+    filename: "react-curator.min.js",
     libraryTarget: "umd",
-    library: "SnappyGridReact"
+    library: "Curator"
   }
 })
 

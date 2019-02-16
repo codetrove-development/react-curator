@@ -1,2 +1,2 @@
 
-module.exports = require('./build/snappy-grid-react').default
+module.exports = require('./build/react-curator').default

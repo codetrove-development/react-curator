@@ -1,8 +1,15 @@
+/* 
+    React-Curator: A wrapper around the curator-core library
+    Copyright (C) 2019 Code Trove Limited
+
+    This program is licensed under GNP GPLv3 and several paid-for licenses. 
+    For more information visit https://www.codetrove.co.uk/Products/Curator/License
+*/
 import React from 'react'
 import { DraggableCore } from 'react-draggable'
-import SnappyCore from 'snappy-grid-core'
+import SnappyCore from 'curator-core'
 
-export default class SnapperGridItem extends React.Component {
+export default class GridItem extends React.Component {
     constructor( props ) {
         super( props )
 

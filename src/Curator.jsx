@@ -1,6 +1,14 @@
+/* 
+    React-Curator: A wrapper around the curator-core library
+    Copyright (C) 2019 Code Trove Limited
+
+    This program is licensed under GNP GPLv3 and several paid-for licenses. 
+    For more information visit https://www.codetrove.co.uk/Products/Curator/License
+*/
+
 import React from 'react'
-import SnappyGridItem from './SnappyGridItem.jsx'
-import SnappyCore, { defaultItemOptions, defaultGridOptions } from 'snappy-grid-core'
+import GridItem from './GridItem.jsx'
+import CuratorCore, { defaultItemOptions, defaultGridOptions } from 'curator-core'
 
 // todo for perf test: change items to an array
 
@@ -10,7 +18,7 @@ const defaultProps = {
 
 const noop = () => {}
 
-export default class SnappyGrid extends React.Component {
+export default class Curator extends React.Component {
     constructor(props = defaultProps) {
         super( props )
 
@@ -21,7 +29,7 @@ export default class SnappyGrid extends React.Component {
             ...defaultGridOptions,
             ...this.props.gridOptions,
         }
-        this.grid = SnappyCore.getEmptyGrid( this.gridOptions.gridRows )
+        this.grid = CuratorCore.getEmptyGrid( this.gridOptions.gridRows )
         this.itemsRequiringResync = []
 
         this.bindEventHandlers()
@@ -65,9 +73,9 @@ export default class SnappyGrid extends React.Component {
 
     renderGridItem( index, child ) {
         return (
-            <SnappyGridItem key={ child.id } { ...this.getGridItemProps( child ) }>
+            <GridItem key={ child.id } { ...this.getGridItemProps( child ) }>
                 { child }
-            </SnappyGridItem>
+            </GridItem>
         )
     }
 
@@ -99,7 +107,7 @@ export default class SnappyGrid extends React.Component {
             const props = childProps.find(c => c.id == item.id)
 
             if ( !props ) {
-                const removeResult = SnappyCore.removeGridItem( this.gridItems, this.grid, item, gridOptions, this.gridSizing )
+                const removeResult = CuratorCore.removeGridItem( this.gridItems, this.grid, item, gridOptions, this.gridSizing )
                 
                 this.updateGridItems( removeResult.updatedItems )
 
@@ -139,7 +147,7 @@ export default class SnappyGrid extends React.Component {
                     gridSizing: this.gridSizing,
                 }
 
-                const movementResult = SnappyCore.onItemPositionChanged( itemProps, item, options )
+                const movementResult = CuratorCore.onItemPositionChanged( itemProps, item, options )
 
                 movementResult.updatedItems.forEach(i => movementChange[ i.id ] = i )
             }
@@ -182,8 +190,8 @@ export default class SnappyGrid extends React.Component {
         const { height, width, x, y } = child.props
         const { gridRows, gridColumns, algo, renderMode } = this.gridOptions
         
-        const classes = SnappyCore.getItemClasses( child.props )
-        const position = SnappyCore.getItemPosition( gridSizing.widthPx, gridSizing.heightPx, gridRows, gridColumns, width, height, x, y, renderMode )
+        const classes = CuratorCore.getItemClasses( child.props )
+        const position = CuratorCore.getItemPosition( gridSizing.widthPx, gridSizing.heightPx, gridRows, gridColumns, width, height, x, y, renderMode )
         const meta = {
             isDragging: false,
             pseudo: false,
@@ -199,8 +207,8 @@ export default class SnappyGrid extends React.Component {
             meta
         }
 
-        const defaultStyles = SnappyCore.getItemStyles( child.props )
-        const positionStyles = SnappyCore.getItemPositionStyles( this.gridOptions, itemProps.styles, position )
+        const defaultStyles = CuratorCore.getItemStyles( child.props )
+        const positionStyles = CuratorCore.getItemPositionStyles( this.gridOptions, itemProps.styles, position )
         const styles = {
             ...defaultStyles,
             ...positionStyles
@@ -224,7 +232,7 @@ export default class SnappyGrid extends React.Component {
             meta
         }
 
-        const addResult = SnappyCore.addItemToGrid( allItemProps, options )
+        const addResult = CuratorCore.addItemToGrid( allItemProps, options )
 
         if ( this.movementHasResizedGrid( addResult.gridSizing, this.gridOptions ) ) {
             this.updateGridSizing( addResult.gridSizing, this.gridOptions )
@@ -380,7 +388,7 @@ export default class SnappyGrid extends React.Component {
     }
 
     onItemDragStart( itemProps ) {
-        const { item, success } = SnappyCore.onItemDragStart( itemProps )
+        const { item, success } = CuratorCore.onItemDragStart( itemProps )
 
         if ( success ) {
             this.updateGridItems([ item ])
@@ -397,7 +405,7 @@ export default class SnappyGrid extends React.Component {
             gridSizing: this.gridSizing,
         }
         
-        const dragResult = SnappyCore.onItemDrag( itemProps, options, movementDetails )
+        const dragResult = CuratorCore.onItemDrag( itemProps, options, movementDetails )
 
         if ( dragResult.success ) {
             this.grid = dragResult.grid
@@ -463,8 +471,8 @@ export default class SnappyGrid extends React.Component {
         this.gridItems = this.gridItems.map(item => {
             const { width, height, x, y } = item
             
-            const position = SnappyCore.getItemPosition( widthPx, heightPx, gridRows, gridColumns, width, height, x, y, renderMode )
-            const positionStyles = SnappyCore.getItemPositionStyles( this.gridOptions, item.styles, position )
+            const position = CuratorCore.getItemPosition( widthPx, heightPx, gridRows, gridColumns, width, height, x, y, renderMode )
+            const positionStyles = CuratorCore.getItemPositionStyles( this.gridOptions, item.styles, position )
 
             const styles = {
                 ...item.styles,
@@ -505,14 +513,14 @@ export default class SnappyGrid extends React.Component {
         const gridSizing = this.gridSizing
         const { widthPx, heightPx } = this.calculateGridSizing()
         const items = this.gridItems
-        const updatedItem = SnappyCore.onItemDragStop( itemProps, items, widthPx, heightPx, this.gridOptions, gridSizing )
+        const updatedItem = CuratorCore.onItemDragStop( itemProps, items, widthPx, heightPx, this.gridOptions, gridSizing )
 
         this.updateGridItems( [ updatedItem ] )
         this.onItemsChange( [ updatedItem ] )
     }
 
     onItemResizeStart( itemProps ) {
-        const { item, success } = SnappyCore.onItemResizeStart( itemProps )
+        const { item, success } = CuratorCore.onItemResizeStart( itemProps )
 
         if ( success ) {
             this.updateGridItems([ item ])
@@ -529,7 +537,7 @@ export default class SnappyGrid extends React.Component {
             gridSizing: this.gridSizing,
         }
 
-        const resizeResult = SnappyCore.onItemResize( itemProps, options, movementDetails )
+        const resizeResult = CuratorCore.onItemResize( itemProps, options, movementDetails )
 
         if ( resizeResult.success ) {
             this.grid = resizeResult.grid
@@ -551,7 +559,7 @@ export default class SnappyGrid extends React.Component {
         const { widthPx, heightPx } = this.calculateGridSizing()
         const items = this.gridItems
 
-        const updatedItem = SnappyCore.onItemResizeStop( itemProps, items, widthPx, heightPx, this.gridOptions, gridSizing)
+        const updatedItem = CuratorCore.onItemResizeStop( itemProps, items, widthPx, heightPx, this.gridOptions, gridSizing)
 
         this.updateGridItems( [ updatedItem ] )
         this.onItemsChange( [ updatedItem ] )
