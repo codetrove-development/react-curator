@@ -30,36 +30,36 @@ export default class GridItem extends React.Component {
 
         const { placeholderStyles } = this.props.meta
 
-        const classes = this.props.glued ? 
-            [ ...this.props.classes, 'glued' ].join(' ') :
-            this.props.classes.join(' ')
+        const resizeClassName = this.props.gridOptions.resizeClassName
+            ? this.props.gridOptions.resizeClassName
+            : 'resize-handle'
+
+        const className = this.props.glued 
+            ? `${ this.props.className } glued`
+            : this.props.className
 
         return (
             <React.Fragment>
                 <DraggableCore 
-                    cancel={ ".resize-handle" }
+                    cancel={ `.${resizeClassName}` }
                     onStart={ (e, data) => this.onDragStart(e, data ) }
                     onStop={ (e, data) => this.onDragEnd( e, data ) }
                     onDrag={ (e, data) => this.onDrag( e, data ) }
                 >
-                    <div ref={ this.itemRef } className={ classes } 
+                    <div ref={ this.itemRef } className={ className } 
                         style={ styles } >
-                            { <div><span>{ this.props.x }, { this.props.y }</span></div> }
-                            { <div><span>{ this.props.width }, { this.props.height }</span></div> }
                             { this.props.children }
                             { 
-                                this.props.displayResize && 
+                                this.props.displayResize && !this.props.glued && 
                                 <DraggableCore
                                     disabled={ this.props.glued }
                                     onStart={ (e, data) => this.onResizeStart( e, data, 'start' ) }
                                     onStop={ (e, data) => this.onResizeEnd( e, data, 'end' ) }
                                     onDrag={ (e, data) => this.onResize(e, data, 'drag') }
                                 >
-                                    <div className="resize-handle"></div>
+                                    <div className={ resizeClassName }></div>
                                 </DraggableCore>
                             }
-                            { this.props.meta.isDragging && <div>Dragging</div> }
-                            { this.props.meta.isResizing && <div>Resizing</div> }
                     </div>
                 </DraggableCore>
                 { isMoving && <div style={ placeholderStyles } className="placeholder"></div> }

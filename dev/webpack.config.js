@@ -7,15 +7,15 @@ module.exports = {
     module: {
         rules: [{
             test: /\.jsx?$/,
-    exclude: /node_modules/,
-    use: [
-      {
-        loader: 'babel-loader',
-        options: {
-          presets: ['@babel/react']
-        }
-      }
-    ],
+            exclude: /node_modules/,
+            use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                presets: ['@babel/react']
+                }
+            }
+            ],
         },
         {
             test: /\.css$/,
@@ -31,7 +31,7 @@ module.exports = {
         path: __dirname + "/dist",
         filename: "[name].js",
         libraryTarget: "umd",
-        library: "SnappyGridReactDev"
+        library: "ReactCuratorDev"
     },
     plugins: [ 
         new HtmlWebPackPlugin({

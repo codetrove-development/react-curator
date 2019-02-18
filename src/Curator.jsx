@@ -107,7 +107,8 @@ export default class Curator extends React.Component {
             const props = childProps.find(c => c.id == item.id)
 
             if ( !props ) {
-                const removeResult = CuratorCore.removeGridItem( this.gridItems, this.grid, item, gridOptions, this.gridSizing )
+                const algoState = this.buildAlgoState()
+                const removeResult = CuratorCore.removeGridItem( algoState, item )
                 
                 this.updateGridItems( removeResult.updatedItems )
 
@@ -190,7 +191,6 @@ export default class Curator extends React.Component {
         const { height, width, x, y } = child.props
         const { gridRows, gridColumns, algo, renderMode } = this.gridOptions
         
-        const classes = CuratorCore.getItemClasses( child.props )
         const position = CuratorCore.getItemPosition( gridSizing.widthPx, gridSizing.heightPx, gridRows, gridColumns, width, height, x, y, renderMode )
         const meta = {
             isDragging: false,
@@ -202,7 +202,6 @@ export default class Curator extends React.Component {
             id: child.key, 
             ...defaultItemOptions, 
             ...child.props,
-            classes,
             position,
             meta
         }
@@ -216,14 +215,6 @@ export default class Curator extends React.Component {
         
         const algoData = algo.getItemInitialData ? algo.getItemInitialData( itemProps ) : () => {}
 
-        const options = { 
-            ...this.state,
-            grid: this.grid,
-            gridOptions: this.gridOptions,
-            items: this.gridItems,
-            gridSizing: this.gridSizing, 
-        }
-
         const allItemProps = {
             ...this.getDefaultItemProps(),
             ...itemProps,
@@ -231,6 +222,15 @@ export default class Curator extends React.Component {
             styles,
             meta
         }
+
+        const options = {
+            ...this.buildAlgoState(),
+        } 
+
+        options.items = [
+            ...options.items,
+            allItemProps
+        ]
 
         const addResult = CuratorCore.addItemToGrid( allItemProps, options )
 
@@ -269,6 +269,18 @@ export default class Curator extends React.Component {
         }
     }
 
+    buildAlgoState() {
+        return {
+            ...this.state,
+            grid: this.grid,
+            gridOptions: this.gridOptions,
+            items: [
+                ...this.gridItems,
+            ],
+            gridSizing: this.gridSizing,
+        }
+    }
+
     syncChildProps() {
         if ( this.itemsRequiringResync.length > 0 ) {
             const items = this.itemsRequiringResync
@@ -278,10 +290,18 @@ export default class Curator extends React.Component {
     }
 
     syncGridProps() {
-        this.gridOptions = {
+        const newGridOptions = {
             ...this.gridOptions,
             ...this.props.gridOptions
         }
+
+        if ( newGridOptions.gridColumns !== this.gridOptions.gridColumns 
+            || newGridOptions.gridRows !== this.gridOptions.gridRows
+            || newGridOptions.renderMode !== this.gridOptions.renderMode ) {
+                this.gridItems = CuratorCore.getUpdatedGridSizeItems( this.gridItems, newGridOptions, this.gridSizing )
+        }
+
+        this.gridOptions = newGridOptions
 
         // optional override by props - allows resize handling
         if ( this.props.width && this.props.height ) {
@@ -296,7 +316,7 @@ export default class Curator extends React.Component {
             }
         }
 
-        console.log( this.gridSizing )
+        //console.log( this.gridSizing )
     }
 
     getInitialState( ) {
@@ -317,6 +337,7 @@ export default class Curator extends React.Component {
     
     getGridItemProps( child ) {
         let itemProps = this.gridItems.find( c => c.id == child.props.id )
+        const { gridOptions } = this
 
         if ( !itemProps ) {
             itemProps = this.generateGridItemProps( child )
@@ -330,6 +351,7 @@ export default class Curator extends React.Component {
         const mergedProps = {
             ...itemProps,
             ...child.props,
+            gridOptions,
         }
 
         return mergedProps

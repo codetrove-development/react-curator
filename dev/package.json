@@ -1,9 +1,10 @@
 {
-  "name": "snappy-grid-react-dev",
-  "version": "1.0.0-alpha",
+  "name": "react-curator-dev",
+  "version": "1.0.0",
   "description": "",
   "repository": {},
-  "main": "snappy-grid-react-dev.js",
+  "main": "index.js",
+  "private": true,
   "scripts": {
     "build-dev-page": "webpack --mode development",
     "dev-server": "webpack-dev-server --mode development --open"
@@ -14,9 +15,7 @@
     "react": "^16.5.2",
     "react-dom": "^16.2.0",
     "react-draggable": "^3.0.5",
-    "snappy-algo": "^1.0.8-alpha",
-    "snappy-grid-core": "^1.0.11-alpha",
-    "snappy-grid-react": "^1.0.4-alpha"
+    "sticky-algo-curator": "^1.0.1-alpha"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
