@@ -7,7 +7,7 @@
 		exports["Curator"] = factory(require("react"), require("react-dom"));
 	else
 		root["Curator"] = factory(root["React"], root["ReactDOM"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE_react__, __WEBPACK_EXTERNAL_MODULE_react_dom__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_react__, __WEBPACK_EXTERNAL_MODULE_react_dom__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -107,7 +107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	if(true)
 		module.exports = factory();
 	else {}
-})(window, function() {
+})(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -215,14 +215,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
 // Snapper core is responsible for handling all logic for interacting with the grid
 // except:
 // 1. direct ui manipulation (responsibility of the wrapper)
@@ -237,25 +229,10 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       position: 'absolute'
     };
   },
-  getItemClasses: function getItemClasses() {
-    var itemOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _options__WEBPACK_IMPORTED_MODULE_1__["defaultItemOptions"];
-
-    var classes = _toConsumableArray(itemOptions.classes).concat([itemOptions.itemClassName]);
-
-    if (itemOptions.glued) {
-      classes.push('snapper-glued');
-    }
-
-    return classes;
-  },
   getEmptyGrid: function getEmptyGrid(gridRows) {
-    var grid = [];
-
-    for (var r = 0; r < gridRows; r++) {
-      grid.push([]);
-    }
-
-    return grid;
+    return Array.from(Array(gridRows), function (_) {
+      return [];
+    });
   },
   /// 
   /// Calculate the position of the item within the grid
@@ -272,24 +249,10 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   },
   getItemPositionPercentages: function getItemPositionPercentages(gridWidth, gridHeight, gridRows, gridCols, width, height, left, top) {
-    var pxPerColFloored = Math.floor(gridWidth / gridCols);
-    var pxPerRowFloored = Math.floor(gridHeight / gridRows);
-    var colRemainderPx = gridWidth - pxPerColFloored * gridCols;
-    var rowRemainderPx = gridHeight - pxPerRowFloored * gridRows; // todo check if need to * by required precision and floor to avoid decimal calc
-
-    var widthPxOffset = 49 / gridWidth / 100;
-    var heightPxOffset = 49 / gridHeight / 100;
-    var extraLeft = Math.min(left, colRemainderPx);
-    var extraWidth = Math.min(width + left, colRemainderPx) - extraLeft;
-    var extraTop = Math.min(top, rowRemainderPx);
-    var extraHeight = Math.min(height + top, rowRemainderPx) - extraTop; // shift it by 2/5 px percent to always count for rounding errors
-    // could do anything below 1/2 but this is sufficient as 
-    // (40 / x = 0.01% limit => pxLimit = 40 / 0.01 = 4000px
-
-    var leftPct = (left * pxPerColFloored + extraLeft) * 100 / gridWidth + widthPxOffset;
-    var widthPct = (width * pxPerColFloored + extraWidth) * 100 / gridWidth + widthPxOffset;
-    var topPct = (top * pxPerRowFloored + extraTop) * 100 / gridHeight + heightPxOffset;
-    var heightPct = (height * pxPerRowFloored + extraHeight) * 100 / gridHeight + heightPxOffset;
+    var leftPct = left / gridCols * 100;
+    var topPct = top / gridRows * 100;
+    var widthPct = width / gridCols * 100;
+    var heightPct = height / gridRows * 100;
     var ending = '%';
     return {
       leftPct: leftPct,
@@ -300,18 +263,10 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     };
   },
   getItemPositionPixels: function getItemPositionPixels(gridWidth, gridHeight, gridRows, gridCols, width, height, left, top) {
-    var pxPerColFloored = Math.floor(gridWidth / gridCols);
-    var pxPerRowFloored = Math.floor(gridHeight / gridRows);
-    var colRemainderPx = gridWidth - pxPerColFloored * gridCols;
-    var rowRemainderPx = gridHeight - pxPerRowFloored * gridRows;
-    var extraLeft = Math.min(left, colRemainderPx);
-    var extraWidth = Math.min(width + left, colRemainderPx) - extraLeft;
-    var extraTop = Math.min(top, rowRemainderPx);
-    var extraHeight = Math.min(height + top, rowRemainderPx) - extraTop;
-    var widthPx = pxPerColFloored * width + extraWidth;
-    var heightPx = pxPerRowFloored * height + extraHeight;
-    var topPx = pxPerRowFloored * top + extraTop;
-    var leftPx = pxPerColFloored * left + extraLeft;
+    var widthPx = gridWidth / gridCols * width;
+    var heightPx = gridHeight / gridRows * height;
+    var topPx = gridHeight / gridRows * top;
+    var leftPx = gridWidth / gridCols * left;
     var ending = 'px';
     return {
       widthPx: widthPx,
@@ -326,8 +281,8 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         newY = item.newY,
         newWidth = item.newWidth,
         newHeight = item.newHeight;
-    var gridWidth = gridSizing.gridWidth,
-        gridHeight = gridSizing.gridHeight,
+    var widthPx = gridSizing.widthPx,
+        heightPx = gridSizing.heightPx,
         gridRows = gridSizing.gridRows,
         gridColumns = gridSizing.gridColumns;
     var renderMode = gridOptions.renderMode;
@@ -335,6 +290,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     var movedItem = _objectSpread({}, item);
 
     if (!(newWidth && newHeight)) {
+      // todo
       console.error("Item ".concat(key, " does not have a newWidth or newHeight value. Unable to correctly resize item"));
       return item;
     } // update the values with the set new values
@@ -349,12 +305,6 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     movedItem.position = _objectSpread({}, position);
     movedItem.styles = _objectSpread({}, styles);
     return movedItem;
-  },
-  updateGridWithMovedItems: function updateGridWithMovedItems(grid, items) {
-    for (var _key in items) {
-      var movedItem = items[_key];
-      this.updateGridWithItemMovement(grid, movedItem, movedItem.x, movedItem.y, movedItem.width, movedItem.height);
-    }
   },
   getUpdatedMovedItems: function getUpdatedMovedItems(items, draggedItemId, newTopPx, newLeftPx, newWidthPx, newHeightPx, gridSizing, gridOptions) {
     var _this = this;
@@ -385,15 +335,15 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     var _this2 = this;
 
     var ignoreIds = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
-    var renderMode = gridOptions.renderMode;
-    var gridRows = gridSizing.gridRows,
-        gridColumns = gridSizing.gridColumns,
-        gridHeight = gridSizing.gridHeight,
-        gridWidth = gridSizing.gridWidth;
+    var gridRows = gridOptions.gridRows,
+        gridColumns = gridOptions.gridColumns,
+        renderMode = gridOptions.renderMode;
+    var heightPx = gridSizing.heightPx,
+        widthPx = gridSizing.widthPx;
     return items.map(function (item) {
       if (ignoreIds.indexOf(item.id) > -1) return;
 
-      var position = _this2.getItemPosition(gridWidth, gridHeight, gridRows, gridColumns, item.width, item.height, item.x, item.y, renderMode);
+      var position = _this2.getItemPosition(widthPx, heightPx, gridRows, gridColumns, item.width, item.height, item.x, item.y, renderMode);
 
       var styles = _this2.getItemPositionStyles(gridOptions, item.styles, position);
 
@@ -404,22 +354,22 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     });
   },
   getGridBoundaries: function getGridBoundaries(gridSizing) {
-    var gridWidth = gridSizing.gridWidth,
-        gridHeight = gridSizing.gridHeight;
+    var widthPx = gridSizing.widthPx,
+        heightPx = gridSizing.heightPx;
     return {
       leftBoundary: 0,
-      rightBoundary: gridWidth,
+      rightBoundary: widthPx,
       topBoundary: 0,
-      bottomBoundary: gridHeight
+      bottomBoundary: heightPx
     };
   },
   getItemSizing: function getItemSizing(itemProps, gridSizing) {
-    var gridWidth = gridSizing.gridWidth,
-        gridHeight = gridSizing.gridHeight;
+    var widthPx = gridSizing.widthPx,
+        heightPx = gridSizing.heightPx;
     var width = itemProps.width,
         height = itemProps.height;
-    var pxPerColumn = gridWidth / gridColumns;
-    var pxPerRow = gridHeight / gridRows;
+    var pxPerColumn = widthPx / gridColumns;
+    var pxPerRow = heightPx / gridRows;
     var itemWidthPx = width * pxPerColumn;
     var itemHeightPx = height * pxPerRow;
     return {
@@ -533,11 +483,15 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         gridOptions = state.gridOptions;
     var pxPerColumn = gridSizing.widthPx / gridOptions.gridColumns;
     var pxPerRow = gridSizing.heightPx / gridOptions.gridRows;
+    var newWidthPx = pxPerColumn * itemProps.width;
+    var newHeightPx = pxPerRow * itemProps.height;
+    var newLeftPx = pxPerColumn * itemProps.x;
+    var newTopPx = pxPerRow * itemProps.y;
     return {
-      newWidthPx: Math.round(pxPerColumn * itemProps.width),
-      newHeightPx: Math.round(pxPerRow * itemProps.height),
-      newLeftPx: Math.round(pxPerColumn * itemProps.x),
-      newTopPx: Math.round(pxPerRow * itemProps.y),
+      newWidthPx: newWidthPx,
+      newHeightPx: newHeightPx,
+      newLeftPx: newLeftPx,
+      newTopPx: newTopPx,
       newX: itemProps.x,
       newY: itemProps.y,
       newWidth: itemProps.width,
@@ -548,11 +502,10 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     var targetItem = _objectSpread({}, itemProps, {
       position: _objectSpread({}, itemProps.position, {
         ending: 'px',
-        topPx: movementChange.newTopPx,
-        // todo this is wrong
-        leftPx: movementChange.newLeftPx,
-        widthPx: movementChange.newWidthPx,
-        heightPx: movementChange.newHeightPx
+        topPx: Math.max(0, movementChange.newTopPx),
+        leftPx: Math.max(0, movementChange.newLeftPx),
+        widthPx: Math.max(0, movementChange.newWidthPx),
+        heightPx: Math.max(0, movementChange.newHeightPx)
       })
     });
 
@@ -582,8 +535,10 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   },
   checkProposedGridSizing: function checkProposedGridSizing(state, proposedGridColumns, proposedGridRows) {
     var gridOptions = state.gridOptions;
-    var canResizeX = gridOptions.resizeGridDirections !== _options__WEBPACK_IMPORTED_MODULE_1__["resizeOptions"].y;
-    var canResizeY = gridOptions.resizeGridDirections !== _options__WEBPACK_IMPORTED_MODULE_1__["resizeOptions"].x;
+    var itemsCanResizeGrid = gridOptions.itemsCanResizeGrid,
+        resizeGridDirections = gridOptions.resizeGridDirections;
+    var canResizeX = itemsCanResizeGrid && resizeGridDirections !== _options__WEBPACK_IMPORTED_MODULE_1__["resizeOptions"].y;
+    var canResizeY = itemsCanResizeGrid && resizeGridDirections !== _options__WEBPACK_IMPORTED_MODULE_1__["resizeOptions"].x;
     if (!canResizeX && proposedGridColumns !== gridOptions.gridColumns || gridOptions.gridColumns < 1) throw 'Invalid grid column proposition from algorithm';else if (!canResizeY && proposedGridRows !== gridOptions.gridRows || gridOptions.gridRows < 1) throw 'Invalid grid row proposition from algorithm';
   },
   getPlaceholderStyles: function getPlaceholderStyles(position) {
@@ -618,7 +573,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         newHeight = movementChange.newHeight;
     var canResizeX = itemsCanResizeGrid && resizeGridDirections !== 'y';
     var canResizeY = itemsCanResizeGrid && resizeGridDirections !== 'x';
-    return (canResizeX || newX + newWidth <= gridColumns) && (canResizeY || newY + newHeight <= gridRows);
+    return (canResizeX || newX + newWidth <= gridColumns) && (canResizeY || newY + newHeight <= gridRows) && newX >= 0 && newY >= 0 && newWidth > 0 && newHeight > 0;
   },
   onItemMovement: function onItemMovement(itemProps, state, movementChange) {
     var _this3 = this;
@@ -652,11 +607,14 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     var updatedItems = Object.keys(dragResult.itemsToMove).map(function (key) {
       var movedItem = dragResult.itemsToMove[key];
+      var _movedItem$meta = movedItem.meta,
+          isDragging = _movedItem$meta.isDragging,
+          isResizing = _movedItem$meta.isResizing;
 
       var position = _this3.getItemPosition(gridWidth, gridHeight, dragResult.gridRows, dragResult.gridColumns, movedItem.width, movedItem.height, movedItem.x, movedItem.y, renderMode); // without these the item will jitter
 
 
-      if (movedItem.id === draggedItem.id) {
+      if (movedItem.id === draggedItem.id && (isDragging || isResizing)) {
         var placeholderStyles = _this3.getPlaceholderStyles(position);
 
         movedItem.meta = _objectSpread({}, movedItem.meta, {
@@ -664,13 +622,13 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         });
         movedItem.position = _objectSpread({}, movedItem.position, {
           ending: 'px',
+          // movedItem.meta.isDragging || movedItem.meta.isResizing ? 'px' : '%',
           topPx: movementChange.newTopPx,
           leftPx: movementChange.newLeftPx,
           widthPx: movementChange.newWidthPx,
           heightPx: movementChange.newHeightPx
         });
         movedItem.styles = _this3.getItemPositionStyles(gridOptions, movedItem.styles, movedItem.position);
-        console.log(movedItem.styles);
       } else {
         movedItem.position = position;
         movedItem.styles = _this3.getItemPositionStyles(gridOptions, movedItem.styles, position);
@@ -847,9 +805,13 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         height = itemProps.height;
     this.setGridWithValue(grid, id, x, y, width, height, itemProps, true);
   },
-  removeGridItem: function removeGridItem(gridItems, grid, itemProps, gridOptions, gridSizing) {
+  removeGridItem: function removeGridItem(state, itemProps) {
     var _this4 = this;
 
+    var grid = state.grid,
+        items = state.items,
+        gridOptions = state.gridOptions,
+        gridSizing = state.gridSizing;
     var id = itemProps.id,
         x = itemProps.x,
         y = itemProps.y,
@@ -861,8 +823,8 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     this.ensureGridHasRow(grid, y);
     this.setGridWithValue(grid, id, x, y, width, height, undefined, true); // todo handle grid resize
 
-    var itemsReverted = gridOptions.algo.onGridItemRemoved(itemProps, grid, gridOptions);
-    var updatedItems = gridItems.map(function (item) {
+    var itemsReverted = gridOptions.algo.onGridItemRemoved(state, itemProps);
+    var updatedItems = items.map(function (item) {
       var revertDetails = itemsReverted.find(function (i) {
         return i.id === item.id;
       });
@@ -940,8 +902,8 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   /// Gets the internal grid x,y equivalent for the supplied top & left px values
   ///
   getGridXY: function getGridXY(gridSizing, topPx, leftPx) {
-    var gridWidth = gridSizing.gridWidth,
-        gridHeight = gridSizing.gridHeight,
+    var widthPx = gridSizing.widthPx,
+        heightPx = gridSizing.heightPx,
         gridRows = gridSizing.gridRows,
         gridColumns = gridSizing.gridColumns;
     var x = this.getGridPosition(gridWidth, leftPx, gridColumns);
@@ -1044,11 +1006,10 @@ var defaultItemOptions = {
   y: 0,
   width: 1,
   height: 1,
-  classes: [],
+  className: 'grid-item',
   glued: false,
   // not yet supported but is partially done in the algo, do not alter
   visible: true,
-  canResize: true,
   displayResize: true,
   position: {
     topPx: 0,
@@ -1062,7 +1023,8 @@ var defaultItemOptions = {
     ending: 'px'
   },
   meta: {
-    isDragging: false
+    isDragging: false,
+    isResizing: false
   }
 };
 var defaultPlaceholderStyles = {
@@ -1075,9 +1037,7 @@ var defaultGridOptions = {
   gridRows: 12,
   width: '100%',
   height: '100%',
-  itemClassName: 'grid-item',
-  // any extra classes to add to the element
-  classes: [],
+  className: 'curator-grid',
   // whether to render the grid items using percentages or pixel values
   renderMode: renderModeType.flex,
   // when a dragged element pushes others out of the way, they may return to their 
@@ -1098,9 +1058,9 @@ var defaultGridOptions = {
   // On all transitions completed for a given element
   onAllTransitionsComplete: function onAllTransitionsComplete(element, details, eventIfFired) {},
   // class name for the resize handle
-  resizeClassName: 'snap-resize-handle',
+  resizeClassName: 'resize-handle',
   enableCSS3: true,
-  algorithm: null
+  algo: null
 };
 
 
@@ -1123,7 +1083,7 @@ var defaultGridOptions = {
 	if(true)
 		module.exports = factory();
 	else {}
-})(window, function() {
+})(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -1256,7 +1216,7 @@ var objIsInArray = function objIsInArray(array, obj, key) {
 	if(true)
 		module.exports = factory();
 	else {}
-})(window, function() {
+})(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -1380,11 +1340,10 @@ var defaultItemOptions = {
   y: 0,
   width: 1,
   height: 1,
-  classes: [],
+  className: 'grid-item',
   glued: false,
   // not yet supported but is partially done in the algo, do not alter
   visible: true,
-  canResize: true,
   displayResize: true,
   position: {
     topPx: 0,
@@ -1398,7 +1357,8 @@ var defaultItemOptions = {
     ending: 'px'
   },
   meta: {
-    isDragging: false
+    isDragging: false,
+    isResizing: false
   }
 };
 var defaultPlaceholderStyles = {
@@ -1411,9 +1371,7 @@ var defaultGridOptions = {
   gridRows: 12,
   width: '100%',
   height: '100%',
-  itemClassName: 'grid-item',
-  // any extra classes to add to the element
-  classes: [],
+  className: 'curator-grid',
   // whether to render the grid items using percentages or pixel values
   renderMode: renderModeType.flex,
   // when a dragged element pushes others out of the way, they may return to their 
@@ -1434,9 +1392,9 @@ var defaultGridOptions = {
   // On all transitions completed for a given element
   onAllTransitionsComplete: function onAllTransitionsComplete(element, details, eventIfFired) {},
   // class name for the resize handle
-  resizeClassName: 'snap-resize-handle',
+  resizeClassName: 'resize-handle',
   enableCSS3: true,
-  algorithm: null
+  algo: null
 };
 
 
@@ -1923,7 +1881,7 @@ module.exports.defaultPlaceholderStyles = options.defaultPlaceholderStyles
 	            'Use `PropTypes.checkPropTypes()` to call them. ' +
 	            'Read more at http://fb.me/use-check-prop-types'
 	          );
-	        } else if ("development" !== 'production' && typeof console !== 'undefined') {
+	        } else if ( true && typeof console !== 'undefined') {
 	          // Old behavior for people using React.PropTypes
 	          var cacheKey = componentName + ':' + propName;
 	          if (
@@ -2365,7 +2323,7 @@ module.exports.defaultPlaceholderStyles = options.defaultPlaceholderStyles
 			return classes.join(' ');
 		}
 
-		if ('object' !== 'undefined' && module.exports) {
+		if ( true && module.exports) {
 			module.exports = classNames;
 		} else if (false) {} else {
 			window.classNames = classNames;
@@ -3693,6 +3651,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var curator_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(curator_core__WEBPACK_IMPORTED_MODULE_2__);
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
@@ -3740,6 +3702,14 @@ var defaultProps = {
 
 var noop = function noop() {};
 
+var isString = function isString(val) {
+  return typeof val === 'string';
+};
+
+var isNumber = function isNumber(val) {
+  return typeof val === 'number';
+};
+
 var Curator =
 /*#__PURE__*/
 function (_React$Component) {
@@ -3762,7 +3732,7 @@ function (_React$Component) {
 
     _this.bindEventHandlers();
 
-    _this.onGridPropsChange = props.onGridPropsChange ? props.onGridPropsChange : _this.defaultGridOptionsChangeHandler;
+    _this.onGridPropsChange = props.onGridPropsChange ? props.onGridPropsChange : _this.defaultGridPropsChangeHandler;
     _this.gridItems = [];
     _this.setupItemProps = false;
     return _this;
@@ -3785,12 +3755,38 @@ function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
+      // todo these will slow it down, need to move elsewhere
+      this.syncItemProps();
+      this.syncGridProps();
+
+      if (this.props.onItemsChange) {
+        return this.renderExternallyControlledChildren();
+      }
+
+      return this.renderInternallyControlledChildren();
+    }
+  }, {
+    key: "renderInternallyControlledChildren",
+    value: function renderInternallyControlledChildren() {
       var _this2 = this;
 
-      var className = this.props.className; // todo these will slow it down, need to move elsewhere
+      return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        ref: this.gridRef,
+        className: this.gridOptions.className
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        ref: this.itemHolderRef,
+        className: "grid-item-holder",
+        style: this.getGridStyles()
+      }, this.state.readyToRenderChildren && react__WEBPACK_IMPORTED_MODULE_0___default.a.Children.map(this.props.children, function (child, index) {
+        return _this2.renderGridItem(child);
+      })));
+    }
+  }, {
+    key: "renderExternallyControlledChildren",
+    value: function renderExternallyControlledChildren() {
+      var _this3 = this;
 
-      this.removeMissingChildren();
-      this.syncGridProps();
+      var className = this.props.className;
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         ref: this.gridRef,
         className: className
@@ -3799,14 +3795,15 @@ function (_React$Component) {
         className: "grid-item-holder",
         style: this.getGridStyles()
       }, this.state.readyToRenderChildren && react__WEBPACK_IMPORTED_MODULE_0___default.a.Children.map(this.props.children, function (child, index) {
-        return _this2.renderGridItem(index, child);
+        return _this3.renderGridItem(child);
       })));
     }
   }, {
     key: "renderGridItem",
-    value: function renderGridItem(index, child) {
+    value: function renderGridItem(child) {
+      if (!child.props.id) throw 'Curator received a child without a unique id. You must provide an id.';
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_GridItem_jsx__WEBPACK_IMPORTED_MODULE_1__["default"], _extends({
-        key: child.id
+        key: child.props.id
       }, this.getGridItemProps(child)), child);
     }
   }, {
@@ -3825,36 +3822,32 @@ function (_React$Component) {
       });
     }
   }, {
-    key: "defaultGridOptionsChangeHandler",
-    value: function defaultGridOptionsChangeHandler(gridOptions) {
-      this.gridOptions = gridOptions;
+    key: "defaultGridPropsChangeHandler",
+    value: function defaultGridPropsChangeHandler(props) {
+      if (props.gridOptions) this.gridOptions = props.gridOptions;
+      this.setState(_objectSpread({}, props));
     }
   }, {
-    key: "removeMissingChildren",
-    value: function removeMissingChildren() {
-      var _this3 = this;
+    key: "syncItemProps",
+    value: function syncItemProps() {
+      var _this4 = this;
 
-      var gridOptions = this.props.gridOptions;
       var childProps = this.props.children.map(function (c) {
         return c.props;
       });
       var newItems = [];
+      var itemsChanged = false;
       this.gridItems.forEach(function (item) {
         var props = childProps.find(function (c) {
           return c.id == item.id;
         });
 
         if (!props) {
-          var algoState = _this3.buildAlgoState();
+          var algoState = _this4.buildAlgoState();
 
           var removeResult = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.removeGridItem(algoState, item);
 
-          _this3.updateGridItems(removeResult.updatedItems);
-
-          if (removeResult.updatedItems.length > 1) {
-            // todo maybe move this outside the loop
-            _this3.onItemsChange(removeResult.updatedItems);
-          }
+          _this4.updateGridItems(removeResult.updatedItems);
 
           return;
         }
@@ -3862,50 +3855,50 @@ function (_React$Component) {
         newItems.push(item);
       }); // todo refactor this
 
-      this.gridItems = newItems; // this is for x, y, width, height being changed within the PROPS i.e. parent
-
-      var movementChange = {};
+      this.gridItems = newItems;
       this.gridItems.forEach(function (item) {
         var props = childProps.find(function (c) {
           return c.id == item.id;
         }); // a non-movement prop could have changed e.g. glued
         // so update the grid items
 
-        var itemProps = _objectSpread({}, item, props);
+        var itemProps = _this4.props.onItemsChange ? _objectSpread({}, item, props) : item;
 
-        if (_this3.itemPositionChanged(item, itemProps)) {
+        if (_this4.itemPositionChanged(item, itemProps)) {
           var options = _objectSpread({
-            gridOptions: _this3.gridOptions
-          }, _this3.state, {
-            grid: _this3.grid,
-            items: _this3.gridItems,
-            gridSizing: _this3.gridSizing
+            gridOptions: _this4.gridOptions
+          }, _this4.state, {
+            grid: _this4.grid,
+            items: _this4.gridItems,
+            gridSizing: _this4.gridSizing
           });
 
           var movementResult = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.onItemPositionChanged(itemProps, item, options);
-          movementResult.updatedItems.forEach(function (i) {
-            return movementChange[i.id] = i;
-          });
-        }
-      });
-      this.gridItems = this.gridItems.map(function (i) {
-        var update = movementChange[i.id];
 
-        if (update) {
-          return update;
-        }
+          if (movementResult.success) {
+            if (_this4.movementHasResizedGrid(movementResult.gridSizing, _this4.gridOptions)) {
+              _this4.updateGridSizingFromAlgo(movementResult.gridSizing, _this4.gridOptions);
+            }
 
-        return i;
+            _this4.updateGridItems(movementResult.updatedItems);
+
+            movementResult.updatedItems.forEach(function (i) {
+              if (_this4.itemsRequiringResync.find(function (i2) {
+                return i2.id == i.id;
+              }) == null) _this4.itemsRequiringResync.push(i);
+            });
+          }
+        }
       });
       return true;
     }
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      if (!this.props.width || !this.props.height) {
-        this.gridSizing = this.calculateGridSizing();
-      } // todo send update upwards
-
+      var _this$gridOptions = this.gridOptions,
+          width = _this$gridOptions.width,
+          height = _this$gridOptions.height;
+      this.updateGridSizing(width, height); // todo send update upwards
 
       this.setState({
         readyToRenderChildren: true
@@ -3920,7 +3913,7 @@ function (_React$Component) {
   }, {
     key: "generateGridItemProps",
     value: function generateGridItemProps(child) {
-      var _this4 = this;
+      var _this5 = this;
 
       if (!child.key) throw 'No key supplied to SnapperGrid child';
       var gridSizing = this.gridSizing;
@@ -3929,12 +3922,11 @@ function (_React$Component) {
           width = _child$props.width,
           x = _child$props.x,
           y = _child$props.y;
-      var _this$gridOptions = this.gridOptions,
-          gridRows = _this$gridOptions.gridRows,
-          gridColumns = _this$gridOptions.gridColumns,
-          algo = _this$gridOptions.algo,
-          renderMode = _this$gridOptions.renderMode;
-      var classes = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemClasses(child.props);
+      var _this$gridOptions2 = this.gridOptions,
+          gridRows = _this$gridOptions2.gridRows,
+          gridColumns = _this$gridOptions2.gridColumns,
+          algo = _this$gridOptions2.algo,
+          renderMode = _this$gridOptions2.renderMode;
       var position = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemPosition(gridSizing.widthPx, gridSizing.heightPx, gridRows, gridColumns, width, height, x, y, renderMode);
       var meta = {
         isDragging: false,
@@ -3945,12 +3937,11 @@ function (_React$Component) {
       var itemProps = _objectSpread({
         id: child.key
       }, curator_core__WEBPACK_IMPORTED_MODULE_2__["defaultItemOptions"], child.props, {
-        classes: classes,
         position: position,
         meta: meta
       });
 
-      var defaultStyles = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemStyles(child.props);
+      var defaultStyles = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemStyles(itemProps);
       var positionStyles = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemPositionStyles(this.gridOptions, itemProps.styles, position);
 
       var styles = _objectSpread({}, defaultStyles, positionStyles);
@@ -3976,11 +3967,11 @@ function (_React$Component) {
 
       if (addResult.itemsMoved) {
         addResult.updatedItems.forEach(function (item) {
-          if (_this4.itemsRequiringResync.find(function (i) {
+          if (_this5.itemsRequiringResync.find(function (i) {
             return i.id === item.id;
           })) return;
 
-          _this4.itemsRequiringResync.push(item);
+          _this5.itemsRequiringResync.push(item);
         });
       } // todo on fail???
       // todo add item to grid on algo
@@ -4022,30 +4013,44 @@ function (_React$Component) {
     value: function syncGridProps() {
       var newGridOptions = _objectSpread({}, this.gridOptions, this.props.gridOptions);
 
-      if (newGridOptions.gridColumns !== this.gridOptions.gridColumns || newGridOptions.gridRows !== this.gridOptions.gridRows) {
+      if (newGridOptions.gridColumns !== this.gridOptions.gridColumns || newGridOptions.gridRows !== this.gridOptions.gridRows || newGridOptions.renderMode !== this.gridOptions.renderMode) {
         this.gridItems = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getUpdatedGridSizeItems(this.gridItems, newGridOptions, this.gridSizing);
       }
 
-      this.gridOptions = newGridOptions; // optional override by props - allows resize handling
+      this.gridOptions = newGridOptions;
+      var _this$props$gridOptio = this.props.gridOptions,
+          width = _this$props$gridOptio.width,
+          height = _this$props$gridOptio.height; // optional override by props - allows resize handling
 
-      if (this.props.width && this.props.height) {
-        if (this.gridSizing && (this.gridSizing.widthPx !== this.props.width || this.gridSizing.heightPx !== this.props.height)) {
+      if (width || height) {
+        var sizingChanged = this.gridSizing && (this.gridSizing.widthPx !== this.props.width || this.gridSizing.heightPx !== this.props.height);
+
+        if (sizingChanged) {
+          this.updateGridSizing(width, height);
           this.updateItemPositions();
         }
+      }
+    }
+  }, {
+    key: "updateGridSizing",
+    value: function updateGridSizing(optionalWidth, optionalHeight) {
+      var newSizing = this.calculateItemHolderSizing(optionalWidth, optionalHeight);
 
-        this.gridSizing = {
-          widthPx: this.props.width,
-          heightPx: this.props.height
-        };
-      } //console.log( this.gridSizing )
+      if (this.gridSizing && (this.gridSizing.width !== newSizing.width || this.gridSizing.height != newSizing.height)) {
+        this.setState({
+          gridSizing: newSizing
+        });
+      }
 
+      this.gridSizing = newSizing;
     }
   }, {
     key: "getInitialState",
     value: function getInitialState() {
       return {
         readyToRenderChildren: false,
-        gridRendered: false
+        gridRendered: false,
+        gridItems: []
       };
     }
   }, {
@@ -4064,6 +4069,7 @@ function (_React$Component) {
       var itemProps = this.gridItems.find(function (c) {
         return c.id == child.props.id;
       });
+      var gridOptions = this.gridOptions;
 
       if (!itemProps) {
         itemProps = this.generateGridItemProps(child);
@@ -4071,12 +4077,14 @@ function (_React$Component) {
       }
 
       if (!this.props.onItemsChange) {
-        return itemProps;
+        return _objectSpread({}, itemProps, {
+          gridOptions: gridOptions
+        });
       }
 
-      var mergedProps = _objectSpread({}, itemProps, child.props);
-
-      return mergedProps;
+      return _objectSpread({}, itemProps, child.props, {
+        gridOptions: gridOptions
+      });
     }
   }, {
     key: "itemPositionChanged",
@@ -4100,27 +4108,74 @@ function (_React$Component) {
       }, callback);
     }
   }, {
-    key: "calculateGridSizing",
-    value: function calculateGridSizing() {
+    key: "calculateItemHolderSizing",
+    value: function calculateItemHolderSizing(optionalWidth, optionalHeight) {
       var itemHolder = this.itemHolderRef.current;
-      if (!itemHolder) return null;
-      var widthPx = itemHolder.clientWidth;
-      var heightPx = itemHolder.clientHeight;
+      var gridWrapper = this.gridRef.current;
+      var width = isString(optionalWidth) ? optionalWidth : isNumber(optionalWidth) ? "".concat(optionalWidth, "px") : "".concat(itemHolder.clientWidth, "px");
+      var height = isString(optionalHeight) ? optionalHeight : isNumber(optionalHeight) ? "".concat(optionalHeight, "px") : "".concat(itemHolder.clientHeight, "px");
+      var heightPct = 0;
+      var widthPct = 0;
+      var heightPx = 0;
+      var widthPx = 0;
+
+      if (height.indexOf('%') > -1) {
+        heightPct = parseInt(height);
+        heightPx = gridWrapper.clientHeight / 100 * heightPct;
+      } else {
+        heightPx = height ? parseInt(height) : itemHolder.clientHeight;
+        heightPct = heightPx / gridWrapper.clientHeight * 100;
+      }
+
+      if (width.indexOf('%') > -1) {
+        widthPct = width ? parseInt(width) : itemHolder.clientWidth;
+        widthPx = gridWrapper.clientWidth / 100 * widthPct;
+      } else {
+        widthPx = parseInt(width);
+        widthPct = widthPx / gridWrapper.clientWidth * 100;
+      }
+
       return {
         widthPx: widthPx,
-        heightPx: heightPx
+        heightPx: heightPx,
+        widthPct: widthPct,
+        heightPct: heightPct,
+        height: height,
+        width: width
       };
-    }
+    } // calculateGridSizing( ) {
+    //     const itemHolder = this.itemHolderRef.current
+    //     const gridWrapper = this.gridRef.current
+    //     if ( !itemHolder )
+    //         return null
+    //     const widthPx = itemHolder.clientWidth
+    //     const heightPx = itemHolder.clientHeight
+    //     const widthPct = gridWrapper.clientWidth / widthPx * 100
+    //     const heightPct = itemHolder.clientHeight / heightPx * 100
+    //     const pct = this.gridOptions.renderMode == 'flex'
+    //     const height = pct ? `${ heightPct }%` : `${ heightPx }px`
+    //     const width = pct ? `${ widthPct }%` : `${ widthPx }px`
+    //     return {
+    //         widthPx,
+    //         heightPx,
+    //         widthPct,
+    //         heightPct,
+    //         height,
+    //         width
+    //     }
+    // }
+
   }, {
     key: "getGridStyles",
     value: function getGridStyles() {
       var gridSizing = this.gridSizing;
       if (!gridSizing) return null;
       return {
-        width: "".concat(gridSizing.widthPx, "px"),
-        height: "".concat(gridSizing.heightPx, "px"),
+        width: gridSizing.width,
+        height: gridSizing.height,
         // todo add to snapper core
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        position: 'relative'
       };
     }
   }, {
@@ -4151,7 +4206,7 @@ function (_React$Component) {
         this.grid = dragResult.grid;
 
         if (this.movementHasResizedGrid(dragResult.gridSizing, this.gridOptions)) {
-          this.updateGridSizing(dragResult.gridSizing, this.gridOptions);
+          this.updateGridSizingFromAlgo(dragResult.gridSizing, this.gridOptions);
         }
 
         this.updateGridItems(dragResult.updatedItems);
@@ -4169,56 +4224,63 @@ function (_React$Component) {
       return gridOptions.gridColumns < movementResult.gridColumns || gridOptions.gridRows < movementResult.gridRows;
     }
   }, {
-    key: "updateGridSizing",
-    value: function updateGridSizing(newGridSizing, currentGridOptions) {
+    key: "updateGridSizingFromAlgo",
+    value: function updateGridSizingFromAlgo(newGridSizing, currentGridOptions) {
       var resizeGridDirections = currentGridOptions.resizeGridDirections,
           itemsCanResizeGrid = currentGridOptions.itemsCanResizeGrid;
-      var gridSizing = {
-        widthPx: newGridSizing.widthPx,
-        heightPx: newGridSizing.heightPx
-      };
+      var gridSizing = this.calculateItemHolderSizing("".concat(newGridSizing.widthPx, "px"), "".concat(newGridSizing.heightPx, "px"));
       if (this.gridSizing.widthPx === gridSizing.widthPx && this.gridSizing.heightPx === gridSizing.heightPx) return;
       var canResizeX = itemsCanResizeGrid && resizeGridDirections !== 'y';
       var canResizeY = itemsCanResizeGrid && resizeGridDirections !== 'x';
       var gridRows = canResizeY ? newGridSizing.gridRows : currentGridOptions.gridRows;
       var gridColumns = canResizeX ? newGridSizing.gridColumns : currentGridOptions.gridColumns;
+      var width = gridSizing.width,
+          height = gridSizing.height;
 
       var gridOptions = _objectSpread({}, currentGridOptions, {
         gridRows: gridRows,
-        gridColumns: gridColumns
+        gridColumns: gridColumns,
+        width: width,
+        height: height
       });
 
       this.gridSizing = gridSizing;
       this.gridOptions = gridOptions;
       this.updateItemPositions();
-      this.props.onGridPropsChange({
-        gridOptions: gridOptions,
-        width: gridSizing.widthPx,
-        height: gridSizing.heightPx
+      this.onGridPropsChange({
+        gridOptions: gridOptions
       });
     } // recalculates the positions for each grid item and updates the associated styles
 
   }, {
     key: "updateItemPositions",
     value: function updateItemPositions() {
-      var _this5 = this;
+      var _this6 = this;
 
       var _this$gridSizing = this.gridSizing,
           widthPx = _this$gridSizing.widthPx,
           heightPx = _this$gridSizing.heightPx;
-      var _this$gridOptions2 = this.gridOptions,
-          gridRows = _this$gridOptions2.gridRows,
-          gridColumns = _this$gridOptions2.gridColumns,
-          renderMode = _this$gridOptions2.renderMode;
+      var _this$gridOptions3 = this.gridOptions,
+          gridRows = _this$gridOptions3.gridRows,
+          gridColumns = _this$gridOptions3.gridColumns,
+          renderMode = _this$gridOptions3.renderMode;
       this.gridItems = this.gridItems.map(function (item) {
         var width = item.width,
             height = item.height,
             x = item.x,
-            y = item.y;
-        var position = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemPosition(widthPx, heightPx, gridRows, gridColumns, width, height, x, y, renderMode);
-        var positionStyles = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemPositionStyles(_this5.gridOptions, item.styles, position);
+            y = item.y,
+            meta = item.meta;
 
-        var styles = _objectSpread({}, item.styles, positionStyles);
+        var _item$styles = item.styles,
+            top = _item$styles.top,
+            left = _item$styles.left,
+            transform = _item$styles.transform,
+            otherStyles = _objectWithoutProperties(_item$styles, ["top", "left", "transform"]);
+
+        var position = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemPosition(widthPx, heightPx, gridRows, gridColumns, width, height, x, y, renderMode);
+        var positionStyles = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemPositionStyles(_this6.gridOptions, item.styles, position);
+
+        var styles = _objectSpread({}, otherStyles, positionStyles);
 
         return _objectSpread({}, item, {
           position: position,
@@ -4229,37 +4291,47 @@ function (_React$Component) {
   }, {
     key: "onItemsChange",
     value: function onItemsChange(updatedItems) {
-      if (!this.props.onItemsChange) return;
       var filtered = updatedItems.map(function (i) {
         var id = i.id,
             x = i.x,
             y = i.y,
             width = i.width,
-            height = i.height;
+            height = i.height,
+            className = i.className;
         return {
           id: id,
           x: x,
           y: y,
           width: width,
-          height: height
+          height: height,
+          className: className
         };
       });
 
-      if (filtered.length) {
+      if (!filtered.length) {
+        return;
+      }
+
+      if (this.props.onItemsChange) {
         this.props.onItemsChange(filtered);
+      } else {
+        var gridItems = this.state.gridItems.map(function (i) {
+          if (i.id !== item1Props.id) return i;
+          return item1Props;
+        });
+        this.setState({
+          gridItems: gridItems
+        });
       }
     }
   }, {
     key: "onItemDragStop",
     value: function onItemDragStop(itemProps) {
-      var gridSizing = this.gridSizing;
-
-      var _this$calculateGridSi = this.calculateGridSizing(),
-          widthPx = _this$calculateGridSi.widthPx,
-          heightPx = _this$calculateGridSi.heightPx;
-
+      var _this$gridSizing2 = this.gridSizing,
+          widthPx = _this$gridSizing2.widthPx,
+          heightPx = _this$gridSizing2.heightPx;
       var items = this.gridItems;
-      var updatedItem = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.onItemDragStop(itemProps, items, widthPx, heightPx, this.gridOptions, gridSizing);
+      var updatedItem = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.onItemDragStop(itemProps, items, widthPx, heightPx, this.gridOptions, this.gridSizing);
       this.updateGridItems([updatedItem]);
       this.onItemsChange([updatedItem]);
     }
@@ -4291,7 +4363,7 @@ function (_React$Component) {
         this.grid = resizeResult.grid;
 
         if (this.movementHasResizedGrid(resizeResult.gridSizing, this.gridOptions)) {
-          this.updateGridSizing(resizeResult.gridSizing, this.gridOptions);
+          this.updateGridSizingFromAlgo(resizeResult.gridSizing, this.gridOptions);
         }
 
         this.updateGridItems(resizeResult.updatedItems);
@@ -4306,14 +4378,11 @@ function (_React$Component) {
   }, {
     key: "onItemResizeStop",
     value: function onItemResizeStop(itemProps) {
-      var gridSizing = this.gridSizing;
-
-      var _this$calculateGridSi2 = this.calculateGridSizing(),
-          widthPx = _this$calculateGridSi2.widthPx,
-          heightPx = _this$calculateGridSi2.heightPx;
-
+      var _this$gridSizing3 = this.gridSizing,
+          widthPx = _this$gridSizing3.widthPx,
+          heightPx = _this$gridSizing3.heightPx;
       var items = this.gridItems;
-      var updatedItem = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.onItemResizeStop(itemProps, items, widthPx, heightPx, this.gridOptions, gridSizing);
+      var updatedItem = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.onItemResizeStop(itemProps, items, widthPx, heightPx, this.gridOptions, this.gridSizing);
       this.updateGridItems([updatedItem]);
       this.onItemsChange([updatedItem]);
     }
@@ -4347,14 +4416,6 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4411,9 +4472,10 @@ function (_React$Component) {
       var isMoving = this.props.meta.isDragging || this.props.meta.isResizing;
       var styles = isMoving ? this.state.styles : this.props.styles;
       var placeholderStyles = this.props.meta.placeholderStyles;
-      var classes = this.props.glued ? [].concat(_toConsumableArray(this.props.classes), ['glued']).join(' ') : this.props.classes.join(' ');
+      var resizeClassName = this.props.gridOptions.resizeClassName ? this.props.gridOptions.resizeClassName : 'resize-handle';
+      var className = this.props.glued ? "".concat(this.props.className, " glued") : this.props.className;
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_draggable__WEBPACK_IMPORTED_MODULE_1__["DraggableCore"], {
-        cancel: ".resize-handle",
+        cancel: ".".concat(resizeClassName),
         onStart: function onStart(e, data) {
           return _this2.onDragStart(e, data);
         },
@@ -4425,9 +4487,9 @@ function (_React$Component) {
         }
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         ref: this.itemRef,
-        className: classes,
+        className: className,
         style: styles
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, this.props.x, ", ", this.props.y)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, this.props.width, ", ", this.props.height)), this.props.children, this.props.displayResize && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_draggable__WEBPACK_IMPORTED_MODULE_1__["DraggableCore"], {
+      }, this.props.children, this.props.displayResize && !this.props.glued && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_draggable__WEBPACK_IMPORTED_MODULE_1__["DraggableCore"], {
         disabled: this.props.glued,
         onStart: function onStart(e, data) {
           return _this2.onResizeStart(e, data, 'start');
@@ -4439,8 +4501,8 @@ function (_React$Component) {
           return _this2.onResize(e, data, 'drag');
         }
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        className: "resize-handle"
-      })), this.props.meta.isDragging && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, "Dragging"), this.props.meta.isResizing && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, "Resizing"))), isMoving && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+        className: resizeClassName
+      })))), isMoving && react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         style: placeholderStyles,
         className: "placeholder"
       }));
@@ -4481,7 +4543,7 @@ function (_React$Component) {
       var styles = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getItemPositionStyles(this.props.gridOptions, this.props.styles, position);
       this.setState({
         styles: styles
-      }); //console.log('drag time: ' + ( (  new Date()) - startTime ) )
+      });
     }
   }, {
     key: "onResizeStart",
