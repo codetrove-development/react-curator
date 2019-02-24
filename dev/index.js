@@ -64,7 +64,7 @@ class App extends React.Component {
 
     const Grid = (
       <Curator className="curator-grid" 
-        onItemsChange={ ( items ) => this.onItemsChange( items ) } 
+        onItemsChange={ ( items, callback ) => this.onItemsChange( items, callback ) } 
         onGridPropsChange={ (options ) => this.onGridPropsChange( options ) }
         gridOptions={ this.state.gridOptions }
         width={ this.state.width }
@@ -105,7 +105,7 @@ class App extends React.Component {
   // for now snapper only works 
   // with a percentage width. Get in touch if this is something you need asap
   componentDidMount() {
-    if ( window ) {
+    if ( typeof window === 'object' ) {
       window.addEventListener( 'resize', this.setSizing )
     }
 
@@ -113,7 +113,7 @@ class App extends React.Component {
   }
 
   componentWillUnmount() {
-    if ( window ) {
+    if ( typeof window === 'object' ) {
       window.removeEventListener( 'resize', this.setSizing )
     }
   }
@@ -134,7 +134,7 @@ class App extends React.Component {
     })
   }
 
-  onItemsChange( itemsToUpdate ) {
+  onItemsChange( itemsToUpdate, callback ) {
     const items = this.state.items.map(i => {
       const update = itemsToUpdate.find(ui => ui.id == i.id)
 
@@ -150,17 +150,19 @@ class App extends React.Component {
 
     this.setState({
       items
-    })
+    }, callback)
   }
 
   // to add another grid item, simply update your state
   // like you would any other collection
   onAddItemClick( e ) {
-    const { items } = this.state
-    const count = items.length
+    const count = this.state.items.length
     const key = count + 1
 
-    items.push( newGridItem( key, 1, 1, 1, 1 ))
+    const items = [
+      ...this.state.items,
+      newGridItem( key, 1, 1, 1, 1, 'grid-item' )
+    ]
 
     this.setState({
       items
