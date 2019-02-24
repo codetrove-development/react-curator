@@ -102,7 +102,6 @@ export default class GridItem extends React.Component {
         this.setState({
             styles
         })
-        //console.log('drag time: ' + ( (  new Date()) - startTime ) )
     }
 
     onResizeStart( e, data ) {

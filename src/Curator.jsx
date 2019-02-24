@@ -17,6 +17,8 @@ const defaultProps = {
 }
 
 const noop = () => {}
+const isString = ( val ) => ( typeof val === 'string' )
+const isNumber = ( val ) => ( typeof val === 'number' )
 
 export default class Curator extends React.Component {
     constructor(props = defaultProps) {
@@ -33,7 +35,7 @@ export default class Curator extends React.Component {
         this.itemsRequiringResync = []
 
         this.bindEventHandlers()
-        this.onGridPropsChange = props.onGridPropsChange ? props.onGridPropsChange : this.defaultGridOptionsChangeHandler
+        this.onGridPropsChange = props.onGridPropsChange ? props.onGridPropsChange : this.defaultGridPropsChangeHandler
         this.gridItems = []
         this.setupItemProps = false
     }
@@ -53,27 +55,51 @@ export default class Curator extends React.Component {
     }
 
     render() {
-        const { className } = this.props
-
         // todo these will slow it down, need to move elsewhere
-        this.removeMissingChildren()
+        this.syncItemProps()
         this.syncGridProps()
 
+        if ( this.props.onItemsChange) {
+            return this.renderExternallyControlledChildren()
+        }
+
+        return this.renderInternallyControlledChildren()
+    }
+
+    renderInternallyControlledChildren() {
         return (
-            <div ref={ this.gridRef } className={ className }>
+            <div ref={ this.gridRef } className={ this.gridOptions.className }>
                 <div ref={ this.itemHolderRef } className="grid-item-holder" style={ this.getGridStyles() }>
-                    { 
+                    {
                         this.state.readyToRenderChildren &&
-                            React.Children.map(this.props.children, ( child, index ) => this.renderGridItem( index, child ) )
+                            React.Children.map(this.props.children, ( child, index ) => this.renderGridItem( child ) )
                     }
                 </div>
             </div>
         )
     }
 
-    renderGridItem( index, child ) {
+    renderExternallyControlledChildren() {
+        const { className } = this.props
+
         return (
-            <GridItem key={ child.id } { ...this.getGridItemProps( child ) }>
+            <div ref={ this.gridRef } className={ className }>
+                <div ref={ this.itemHolderRef } className="grid-item-holder" style={ this.getGridStyles() }>
+                    { 
+                        this.state.readyToRenderChildren &&
+                            React.Children.map(this.props.children, ( child, index ) => this.renderGridItem( child ) )
+                    }
+                </div>
+            </div>
+        )
+    }
+
+    renderGridItem(  child ) {
+        if ( !child.props.id )
+            throw 'Curator received a child without a unique id. You must provide an id.'
+
+        return (
+            <GridItem key={ child.props.id } { ...this.getGridItemProps( child ) }>
                 { child }
             </GridItem>
         )
@@ -91,17 +117,21 @@ export default class Curator extends React.Component {
         })
     }
 
-    defaultGridOptionsChangeHandler( gridOptions ) {
-        this.gridOptions = gridOptions
+    defaultGridPropsChangeHandler( props ) {
+        if ( props.gridOptions )
+            this.gridOptions = props.gridOptions
+
+        this.setState({
+            ...props
+        })
     }
 
-    removeMissingChildren() {
-        const { gridOptions } = this.props
-
+    syncItemProps() {
         const childProps = this.props.children
             .map( c => c.props )
 
         let newItems = []
+        let itemsChanged = false
 
         this.gridItems.forEach(item => {
             const props = childProps.find(c => c.id == item.id)
@@ -110,13 +140,7 @@ export default class Curator extends React.Component {
                 const algoState = this.buildAlgoState()
                 const removeResult = CuratorCore.removeGridItem( algoState, item )
                 
-                this.updateGridItems( removeResult.updatedItems )
-
-                if ( removeResult.updatedItems.length > 1 ) {
-                    // todo maybe move this outside the loop
-                    this.onItemsChange( removeResult.updatedItems )
-                }            
-                
+                this.updateGridItems( removeResult.updatedItems )      
                 return
             }
 
@@ -126,18 +150,17 @@ export default class Curator extends React.Component {
         // todo refactor this
         this.gridItems = newItems
 
-        // this is for x, y, width, height being changed within the PROPS i.e. parent
-        const movementChange = {}
-
         this.gridItems.forEach(item => {
             const props = childProps.find(c => c.id == item.id)
 
             // a non-movement prop could have changed e.g. glued
             // so update the grid items
-            const itemProps = {
-                ...item,
-                ...props,
-            }
+            const itemProps = this.props.onItemsChange 
+                ? {
+                    ...item,
+                    ...props,
+                }
+                : item
 
             if ( this.itemPositionChanged( item, itemProps ) ) {
                 const options = { 
@@ -150,27 +173,27 @@ export default class Curator extends React.Component {
 
                 const movementResult = CuratorCore.onItemPositionChanged( itemProps, item, options )
 
-                movementResult.updatedItems.forEach(i => movementChange[ i.id ] = i )
+                if ( movementResult.success ) {
+                    if ( this.movementHasResizedGrid( movementResult.gridSizing, this.gridOptions ) ) {
+                        this.updateGridSizingFromAlgo( movementResult.gridSizing, this.gridOptions )
+                    }
+
+                    this.updateGridItems( movementResult.updatedItems )
+                    movementResult.updatedItems.forEach(i => {
+                        if ( this.itemsRequiringResync.find(i2 => i2.id == i.id ) == null )
+                            this.itemsRequiringResync.push( i )
+                    })
+                }
             }
-        })
-
-        this.gridItems = this.gridItems.map(i => {
-            const update = movementChange[ i.id ]
-
-            if ( update ) {
-                return update
-            }
-
-            return i
         })
 
         return true
     }
 
     componentDidMount() {
-        if ( !this.props.width || !this.props.height ) {
-            this.gridSizing = this.calculateGridSizing()
-        }
+        const { width, height } = this.gridOptions
+
+        this.updateGridSizing( width, height )
 
         // todo send update upwards
         this.setState({
@@ -206,7 +229,7 @@ export default class Curator extends React.Component {
             meta
         }
 
-        const defaultStyles = CuratorCore.getItemStyles( child.props )
+        const defaultStyles = CuratorCore.getItemStyles( itemProps )
         const positionStyles = CuratorCore.getItemPositionStyles( this.gridOptions, itemProps.styles, position )
         const styles = {
             ...defaultStyles,
@@ -303,26 +326,40 @@ export default class Curator extends React.Component {
 
         this.gridOptions = newGridOptions
 
-        // optional override by props - allows resize handling
-        if ( this.props.width && this.props.height ) {
+        const { width, height } = this.props.gridOptions
 
-            if ( this.gridSizing && ( this.gridSizing.widthPx !== this.props.width || this.gridSizing.heightPx !== this.props.height )) {
+        // optional override by props - allows resize handling
+        if ( width || height ) {
+            const sizingChanged = this.gridSizing 
+                && ( this.gridSizing.widthPx !== this.props.width 
+                    || this.gridSizing.heightPx !== this.props.height 
+                )
+
+            if ( sizingChanged ) {
+                
+                this.updateGridSizing( width, height )
                 this.updateItemPositions()
             }
+        }
+    }
 
-            this.gridSizing = {
-                widthPx: this.props.width,
-                heightPx: this.props.height
-            }
+    updateGridSizing( optionalWidth, optionalHeight ) {
+        const newSizing = this.calculateItemHolderSizing( optionalWidth, optionalHeight )
+
+        if ( this.gridSizing && ( this.gridSizing.width !== newSizing.width || this.gridSizing.height != newSizing.height ) ) {
+            this.setState({
+                gridSizing: newSizing
+            })
         }
 
-        //console.log( this.gridSizing )
+        this.gridSizing = newSizing
     }
 
     getInitialState( ) {
         return {
             readyToRenderChildren: false,
             gridRendered: false,
+            gridItems: []
         }
     }
 
@@ -345,16 +382,17 @@ export default class Curator extends React.Component {
         }
 
         if ( !this.props.onItemsChange ) {
-            return itemProps
+            return {
+                ...itemProps,
+                gridOptions
+            }
         }
 
-        const mergedProps = {
+        return {
             ...itemProps,
             ...child.props,
             gridOptions,
         }
-
-        return mergedProps
     }
 
     itemPositionChanged( oldItemProps, newItemProps ) {
@@ -380,20 +418,79 @@ export default class Curator extends React.Component {
         this.setState({ gridRendered: true }, callback)
     }
 
-    calculateGridSizing() {
+    calculateItemHolderSizing( optionalWidth, optionalHeight ) {
         const itemHolder = this.itemHolderRef.current
+        const gridWrapper = this.gridRef.current
 
-        if ( !itemHolder )
-            return null
-        
-        const widthPx = itemHolder.clientWidth
-        const heightPx = itemHolder.clientHeight
+        const width = isString( optionalWidth ) 
+            ? optionalWidth 
+            : isNumber( optionalWidth ) 
+                ? `${ optionalWidth }px`
+                : `${ itemHolder.clientWidth }px`
+
+        const height = isString( optionalHeight ) 
+            ? optionalHeight 
+            : isNumber( optionalHeight )
+                ? `${ optionalHeight }px`
+                : `${ itemHolder.clientHeight }px`
+
+        let heightPct = 0
+        let widthPct = 0
+        let heightPx = 0
+        let widthPx = 0
+
+        if ( height.indexOf('%') > -1 ) {
+            heightPct = parseInt( height )
+            heightPx = gridWrapper.clientHeight / 100 * heightPct
+        } 
+        else {
+            heightPx = height ? parseInt( height ) : itemHolder.clientHeight
+            heightPct = heightPx / gridWrapper.clientHeight * 100
+        }
+
+        if ( width.indexOf('%') > -1 ) {
+            widthPct = width ? parseInt( width ) : itemHolder.clientWidth
+            widthPx = gridWrapper.clientWidth / 100 * widthPct
+        }
+        else {
+            widthPx = parseInt( width )
+            widthPct = widthPx / gridWrapper.clientWidth * 100
+        }
 
         return {
             widthPx,
-            heightPx
+            heightPx,
+            widthPct,
+            heightPct,
+            height,
+            width
         }
     }
+
+    // calculateGridSizing( ) {
+    //     const itemHolder = this.itemHolderRef.current
+    //     const gridWrapper = this.gridRef.current
+
+    //     if ( !itemHolder )
+    //         return null
+        
+    //     const widthPx = itemHolder.clientWidth
+    //     const heightPx = itemHolder.clientHeight
+    //     const widthPct = gridWrapper.clientWidth / widthPx * 100
+    //     const heightPct = itemHolder.clientHeight / heightPx * 100
+    //     const pct = this.gridOptions.renderMode == 'flex'
+    //     const height = pct ? `${ heightPct }%` : `${ heightPx }px`
+    //     const width = pct ? `${ widthPct }%` : `${ widthPx }px`
+
+    //     return {
+    //         widthPx,
+    //         heightPx,
+    //         widthPct,
+    //         heightPct,
+    //         height,
+    //         width
+    //     }
+    // }
 
     getGridStyles( ) {
         const gridSizing = this.gridSizing
@@ -402,10 +499,11 @@ export default class Curator extends React.Component {
             return null
 
         return {
-            width: `${ gridSizing.widthPx }px`,
-            height: `${ gridSizing.heightPx }px`,
+            width: gridSizing.width,
+            height: gridSizing.height,
             // todo add to snapper core
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            position: 'relative',
         }
     }
 
@@ -433,7 +531,7 @@ export default class Curator extends React.Component {
             this.grid = dragResult.grid
 
             if ( this.movementHasResizedGrid( dragResult.gridSizing, this.gridOptions ) ) {
-                this.updateGridSizing( dragResult.gridSizing, this.gridOptions )
+                this.updateGridSizingFromAlgo( dragResult.gridSizing, this.gridOptions )
             }
             
             this.updateGridItems( dragResult.updatedItems )
@@ -449,13 +547,10 @@ export default class Curator extends React.Component {
             || ( gridOptions.gridRows < movementResult.gridRows )
     }
 
-    updateGridSizing( newGridSizing, currentGridOptions ) {
+    updateGridSizingFromAlgo( newGridSizing, currentGridOptions ) {
         const { resizeGridDirections, itemsCanResizeGrid } = currentGridOptions
 
-        const gridSizing = {
-            widthPx: newGridSizing.widthPx,
-            heightPx: newGridSizing.heightPx,
-        }
+        const gridSizing = this.calculateItemHolderSizing( `${newGridSizing.widthPx}px`, `${newGridSizing.heightPx}px` ) 
 
         if ( this.gridSizing.widthPx === gridSizing.widthPx 
             && this.gridSizing.heightPx === gridSizing.heightPx )
@@ -466,11 +561,14 @@ export default class Curator extends React.Component {
 
         const gridRows = canResizeY ? newGridSizing.gridRows : currentGridOptions.gridRows
         const gridColumns = canResizeX ? newGridSizing.gridColumns : currentGridOptions.gridColumns
+        const { width, height } = gridSizing
 
         const gridOptions = {
             ...currentGridOptions,
             gridRows,
             gridColumns,
+            width,
+            height,
         }
 
         this.gridSizing = gridSizing
@@ -478,10 +576,8 @@ export default class Curator extends React.Component {
 
         this.updateItemPositions()
 
-        this.props.onGridPropsChange( {
+        this.onGridPropsChange( {
             gridOptions,
-            width: gridSizing.widthPx,
-            height: gridSizing.heightPx
         } )
     }
 
@@ -491,13 +587,14 @@ export default class Curator extends React.Component {
         const { gridRows, gridColumns, renderMode } = this.gridOptions
 
         this.gridItems = this.gridItems.map(item => {
-            const { width, height, x, y } = item
+            const { width, height, x, y, meta } = item
+            const { top, left, transform, ...otherStyles } = item.styles 
             
             const position = CuratorCore.getItemPosition( widthPx, heightPx, gridRows, gridColumns, width, height, x, y, renderMode )
             const positionStyles = CuratorCore.getItemPositionStyles( this.gridOptions, item.styles, position )
 
             const styles = {
-                ...item.styles,
+                ...otherStyles,
                 ...positionStyles
             }
 
@@ -510,32 +607,45 @@ export default class Curator extends React.Component {
     }
 
     onItemsChange( updatedItems ) {
-        if ( !this.props.onItemsChange )
-            return
-
         const filtered = updatedItems
             .map(i => {
-                const { id, x, y, width, height } = i
+                const { id, x, y, width, height, className } = i
 
                 return {
                     id,
                     x,
                     y,
                     width,
-                    height
+                    height,
+                    className
                 }
             })
 
-        if ( filtered.length ) {
+        if ( !filtered.length ) {
+            return
+        }      
+        
+        if ( this.props.onItemsChange ) {
             this.props.onItemsChange( filtered )
-        }        
+        }
+        else {
+            const gridItems = this.state.gridItems.map(i => {
+                if ( i.id !== item1Props.id )
+                  return i
+          
+                return item1Props 
+              })
+
+            this.setState({
+                gridItems
+            })
+        }
     }
 
     onItemDragStop( itemProps ) {
-        const gridSizing = this.gridSizing
-        const { widthPx, heightPx } = this.calculateGridSizing()
+        const { widthPx, heightPx } = this.gridSizing
         const items = this.gridItems
-        const updatedItem = CuratorCore.onItemDragStop( itemProps, items, widthPx, heightPx, this.gridOptions, gridSizing )
+        const updatedItem = CuratorCore.onItemDragStop( itemProps, items, widthPx, heightPx, this.gridOptions, this.gridSizing )
 
         this.updateGridItems( [ updatedItem ] )
         this.onItemsChange( [ updatedItem ] )
@@ -565,7 +675,7 @@ export default class Curator extends React.Component {
             this.grid = resizeResult.grid
 
             if ( this.movementHasResizedGrid( resizeResult.gridSizing, this.gridOptions ) ) {
-                this.updateGridSizing( resizeResult.gridSizing, this.gridOptions )
+                this.updateGridSizingFromAlgo( resizeResult.gridSizing, this.gridOptions )
             }
             
             this.updateGridItems( resizeResult.updatedItems )
@@ -577,11 +687,10 @@ export default class Curator extends React.Component {
     }
 
     onItemResizeStop( itemProps ) {
-        const gridSizing = this.gridSizing
-        const { widthPx, heightPx } = this.calculateGridSizing()
+        const { widthPx, heightPx } = this.gridSizing
         const items = this.gridItems
 
-        const updatedItem = CuratorCore.onItemResizeStop( itemProps, items, widthPx, heightPx, this.gridOptions, gridSizing)
+        const updatedItem = CuratorCore.onItemResizeStop( itemProps, items, widthPx, heightPx, this.gridOptions, this.gridSizing)
 
         this.updateGridItems( [ updatedItem ] )
         this.onItemsChange( [ updatedItem ] )
