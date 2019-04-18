@@ -2,7 +2,7 @@
     React-Curator: A wrapper around the curator-core library
     Copyright (C) 2019 Code Trove Limited
 
-    This program is licensed under GNP GPLv3 and several paid-for licenses. 
+    This program is licensed under the Code Trove Products License. 
     For more information visit https://www.codetrove.co.uk/Products/Curator/License
 */
 
@@ -59,33 +59,14 @@ export default class Curator extends React.Component {
         this.syncItemProps()
         this.syncGridProps()
 
-        if ( this.props.onItemsChange) {
-            return this.renderExternallyControlledChildren()
-        }
-
-        return this.renderInternallyControlledChildren()
-    }
-
-    renderInternallyControlledChildren() {
-        return (
-            <div ref={ this.gridRef } className={ this.gridOptions.className }>
-                <div ref={ this.itemHolderRef } className="grid-item-holder" style={ this.getGridStyles() }>
-                    {
-                        this.state.readyToRenderChildren &&
-                            React.Children.map(this.props.children, ( child, index ) => this.renderGridItem( child ) )
-                    }
-                </div>
-            </div>
-        )
-    }
-
-    renderExternallyControlledChildren() {
-        const { className } = this.props
+        const className = this.props.onItemsChange 
+            ? this.props.className
+            : this.gridOptions.className
 
         return (
             <div ref={ this.gridRef } className={ className }>
                 <div ref={ this.itemHolderRef } className="grid-item-holder" style={ this.getGridStyles() }>
-                    { 
+                    {
                         this.state.readyToRenderChildren &&
                             React.Children.map(this.props.children, ( child, index ) => this.renderGridItem( child ) )
                     }
@@ -126,12 +107,13 @@ export default class Curator extends React.Component {
         })
     }
 
-    syncItemProps() {
-        const childProps = this.props.children
-            .map( c => c.props )
+    getChildProps() {
+        return React.Children.map( this.props.children, c => c.props ) || []
+    }
 
+    syncItemProps() {
+        const childProps = this.getChildProps()
         let newItems = []
-        let itemsChanged = false
 
         this.gridItems.forEach(item => {
             const props = childProps.find(c => c.id == item.id)
@@ -207,9 +189,6 @@ export default class Curator extends React.Component {
 
     // todo a lot of this should go in Core?
     generateGridItemProps( child ) {
-        if ( !child.key )
-            throw 'No key supplied to SnapperGrid child'
-
         const gridSizing = this.gridSizing
         const { height, width, x, y } = child.props
         const { gridRows, gridColumns, algo, renderMode } = this.gridOptions
@@ -222,7 +201,7 @@ export default class Curator extends React.Component {
         }
 
         const itemProps = {
-            id: child.key, 
+            id: child.id, 
             ...defaultItemOptions, 
             ...child.props,
             position,
@@ -257,22 +236,22 @@ export default class Curator extends React.Component {
 
         const addResult = CuratorCore.addItemToGrid( allItemProps, options )
 
-        if ( this.movementHasResizedGrid( addResult.gridSizing, this.gridOptions ) ) {
-            this.updateGridSizing( addResult.gridSizing, this.gridOptions )
-        }
-
-        this.updateGridItems( addResult.updatedItems )
-
-        if ( addResult.itemsMoved ) {
-            addResult.updatedItems.forEach(item => {
-                if ( this.itemsRequiringResync.find(i => i.id === item.id ) )
-                    return
+        if ( addResult.success ) {
+            if ( this.movementHasResizedGrid( addResult.gridSizing, this.gridOptions ) ) {
+                this.updateGridSizing( addResult.gridSizing, this.gridOptions )
+            }
     
-                this.itemsRequiringResync.push( item )
-            })
+            this.updateGridItems( addResult.updatedItems )
+    
+            if ( addResult.itemsMoved ) {
+                addResult.updatedItems.forEach(item => {
+                    if ( this.itemsRequiringResync.find(i => i.id === item.id ) )
+                        return
+        
+                    this.itemsRequiringResync.push( item )
+                })
+            }
         }
-
-        // todo on fail???
 
         // todo add item to grid on algo
         // if it's ok, then return with meta configured true
@@ -281,7 +260,7 @@ export default class Curator extends React.Component {
         // return an update request (single item) 
         // this will work well for additions, 
 
-        // then add this stuff to onmount to speed up the initial render => lightning!
+        // then add this stuff to onmount to speed up
 
         return {
             ...addResult.targetItem,
@@ -312,30 +291,36 @@ export default class Curator extends React.Component {
         }
     }
 
+    gridOptionsChangeNeedsItemsUpdate( newGridOptions ) {
+        return newGridOptions.gridColumns !== this.gridOptions.gridColumns 
+        || newGridOptions.gridRows !== this.gridOptions.gridRows
+        || newGridOptions.renderMode !== this.gridOptions.renderMode
+    }
+
+    gridSizingIsOutOfSyncWithProps() {
+        if ( !this.gridSizing  )
+            return false
+
+        return this.gridSizing.widthPx !== this.props.width 
+            || this.gridSizing.heightPx !== this.props.height
+    }
+
     syncGridProps() {
         const newGridOptions = {
             ...this.gridOptions,
             ...this.props.gridOptions
         }
 
-        if ( newGridOptions.gridColumns !== this.gridOptions.gridColumns 
-            || newGridOptions.gridRows !== this.gridOptions.gridRows
-            || newGridOptions.renderMode !== this.gridOptions.renderMode ) {
-                this.gridItems = CuratorCore.getUpdatedGridSizeItems( this.gridItems, newGridOptions, this.gridSizing )
-        }
+        if ( this.gridOptionsChangeNeedsItemsUpdate( newGridOptions ) ) 
+            this.gridItems = CuratorCore.getUpdatedGridSizeItems( this.gridItems, newGridOptions, this.gridSizing )
 
         this.gridOptions = newGridOptions
 
-        const { width, height } = this.props.gridOptions
+        const { width, height } = newGridOptions
 
         // optional override by props - allows resize handling
         if ( width || height ) {
-            const sizingChanged = this.gridSizing 
-                && ( this.gridSizing.widthPx !== this.props.width 
-                    || this.gridSizing.heightPx !== this.props.height 
-                )
-
-            if ( sizingChanged ) {
+            if ( this.gridSizingIsOutOfSyncWithProps() ) {
                 
                 this.updateGridSizing( width, height )
                 this.updateItemPositions()
@@ -466,31 +451,6 @@ export default class Curator extends React.Component {
             width
         }
     }
-
-    // calculateGridSizing( ) {
-    //     const itemHolder = this.itemHolderRef.current
-    //     const gridWrapper = this.gridRef.current
-
-    //     if ( !itemHolder )
-    //         return null
-        
-    //     const widthPx = itemHolder.clientWidth
-    //     const heightPx = itemHolder.clientHeight
-    //     const widthPct = gridWrapper.clientWidth / widthPx * 100
-    //     const heightPct = itemHolder.clientHeight / heightPx * 100
-    //     const pct = this.gridOptions.renderMode == 'flex'
-    //     const height = pct ? `${ heightPct }%` : `${ heightPx }px`
-    //     const width = pct ? `${ widthPct }%` : `${ widthPx }px`
-
-    //     return {
-    //         widthPx,
-    //         heightPx,
-    //         widthPct,
-    //         heightPct,
-    //         height,
-    //         width
-    //     }
-    // }
 
     getGridStyles( ) {
         const gridSizing = this.gridSizing

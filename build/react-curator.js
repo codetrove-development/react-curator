@@ -3832,9 +3832,9 @@ function (_React$Component) {
     value: function syncItemProps() {
       var _this4 = this;
 
-      var childProps = this.props.children.map(function (c) {
+      var childProps = react__WEBPACK_IMPORTED_MODULE_0___default.a.Children.map(this.props.children, function (c) {
         return c.props;
-      });
+      }) || [];
       var newItems = [];
       var itemsChanged = false;
       this.gridItems.forEach(function (item) {
@@ -3915,7 +3915,6 @@ function (_React$Component) {
     value: function generateGridItemProps(child) {
       var _this5 = this;
 
-      if (!child.key) throw 'No key supplied to SnapperGrid child';
       var gridSizing = this.gridSizing;
       var _child$props = child.props,
           height = _child$props.height,
@@ -3935,7 +3934,7 @@ function (_React$Component) {
       };
 
       var itemProps = _objectSpread({
-        id: child.key
+        id: child.id
       }, curator_core__WEBPACK_IMPORTED_MODULE_2__["defaultItemOptions"], child.props, {
         position: position,
         meta: meta
@@ -3959,28 +3958,29 @@ function (_React$Component) {
       options.items = [].concat(_toConsumableArray(options.items), [allItemProps]);
       var addResult = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.addItemToGrid(allItemProps, options);
 
-      if (this.movementHasResizedGrid(addResult.gridSizing, this.gridOptions)) {
-        this.updateGridSizing(addResult.gridSizing, this.gridOptions);
-      }
+      if (addResult.success) {
+        if (this.movementHasResizedGrid(addResult.gridSizing, this.gridOptions)) {
+          this.updateGridSizing(addResult.gridSizing, this.gridOptions);
+        }
 
-      this.updateGridItems(addResult.updatedItems);
+        this.updateGridItems(addResult.updatedItems);
 
-      if (addResult.itemsMoved) {
-        addResult.updatedItems.forEach(function (item) {
-          if (_this5.itemsRequiringResync.find(function (i) {
-            return i.id === item.id;
-          })) return;
+        if (addResult.itemsMoved) {
+          addResult.updatedItems.forEach(function (item) {
+            if (_this5.itemsRequiringResync.find(function (i) {
+              return i.id === item.id;
+            })) return;
 
-          _this5.itemsRequiringResync.push(item);
-        });
-      } // todo on fail???
-      // todo add item to grid on algo
+            _this5.itemsRequiringResync.push(item);
+          });
+        }
+      } // todo add item to grid on algo
       // if it's ok, then return with meta configured true
       // otherwise return configured is false,
       // dont render it until prop configured is true
       // return an update request (single item) 
       // this will work well for additions, 
-      // then add this stuff to onmount to speed up the initial render => lightning!
+      // then add this stuff to onmount to speed up
 
 
       return _objectSpread({}, addResult.targetItem, {
@@ -4009,23 +4009,28 @@ function (_React$Component) {
       }
     }
   }, {
+    key: "gridOptionsChangeNeedsItemsUpdate",
+    value: function gridOptionsChangeNeedsItemsUpdate(newGridOptions) {
+      return newGridOptions.gridColumns !== this.gridOptions.gridColumns || newGridOptions.gridRows !== this.gridOptions.gridRows || newGridOptions.renderMode !== this.gridOptions.renderMode;
+    }
+  }, {
+    key: "gridSizingIsOutOfSyncWithProps",
+    value: function gridSizingIsOutOfSyncWithProps() {
+      if (!this.gridSizing) return false;
+      return this.gridSizing.widthPx !== this.props.width || this.gridSizing.heightPx !== this.props.height;
+    }
+  }, {
     key: "syncGridProps",
     value: function syncGridProps() {
       var newGridOptions = _objectSpread({}, this.gridOptions, this.props.gridOptions);
 
-      if (newGridOptions.gridColumns !== this.gridOptions.gridColumns || newGridOptions.gridRows !== this.gridOptions.gridRows || newGridOptions.renderMode !== this.gridOptions.renderMode) {
-        this.gridItems = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getUpdatedGridSizeItems(this.gridItems, newGridOptions, this.gridSizing);
-      }
-
+      if (this.gridOptionsChangeNeedsItemsUpdate(newGridOptions)) this.gridItems = curator_core__WEBPACK_IMPORTED_MODULE_2___default.a.getUpdatedGridSizeItems(this.gridItems, newGridOptions, this.gridSizing);
       this.gridOptions = newGridOptions;
-      var _this$props$gridOptio = this.props.gridOptions,
-          width = _this$props$gridOptio.width,
-          height = _this$props$gridOptio.height; // optional override by props - allows resize handling
+      var width = newGridOptions.width,
+          height = newGridOptions.height; // optional override by props - allows resize handling
 
       if (width || height) {
-        var sizingChanged = this.gridSizing && (this.gridSizing.widthPx !== this.props.width || this.gridSizing.heightPx !== this.props.height);
-
-        if (sizingChanged) {
+        if (this.gridSizingIsOutOfSyncWithProps()) {
           this.updateGridSizing(width, height);
           this.updateItemPositions();
         }
@@ -4143,28 +4148,7 @@ function (_React$Component) {
         height: height,
         width: width
       };
-    } // calculateGridSizing( ) {
-    //     const itemHolder = this.itemHolderRef.current
-    //     const gridWrapper = this.gridRef.current
-    //     if ( !itemHolder )
-    //         return null
-    //     const widthPx = itemHolder.clientWidth
-    //     const heightPx = itemHolder.clientHeight
-    //     const widthPct = gridWrapper.clientWidth / widthPx * 100
-    //     const heightPct = itemHolder.clientHeight / heightPx * 100
-    //     const pct = this.gridOptions.renderMode == 'flex'
-    //     const height = pct ? `${ heightPct }%` : `${ heightPx }px`
-    //     const width = pct ? `${ widthPct }%` : `${ widthPx }px`
-    //     return {
-    //         widthPx,
-    //         heightPx,
-    //         widthPct,
-    //         heightPct,
-    //         height,
-    //         width
-    //     }
-    // }
-
+    }
   }, {
     key: "getGridStyles",
     value: function getGridStyles() {

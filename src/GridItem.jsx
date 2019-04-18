@@ -2,7 +2,7 @@
     React-Curator: A wrapper around the curator-core library
     Copyright (C) 2019 Code Trove Limited
 
-    This program is licensed under GNP GPLv3 and several paid-for licenses. 
+    This program is licensed under the Code Trove Products License. 
     For more information visit https://www.codetrove.co.uk/Products/Curator/License
 */
 import React from 'react'
