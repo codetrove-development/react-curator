@@ -1,6 +1,6 @@
 {
   "name": "react-curator",
-  "version": "1.0.8-beta",
+  "version": "1.0.0",
   "description": "React Draggable Grid using Snapper Core library",
   "main": "index.js",
   "unpkg": "dist/react-curator.min.js",

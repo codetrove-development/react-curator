@@ -48,7 +48,7 @@ export default class GridItem extends React.Component {
                 >
                     <div ref={ this.itemRef } className={ className } 
                         style={ styles } >
-                            { this.props.children }
+                            { React.cloneElement(this.props.child, this.props) }
                             { 
                                 this.props.displayResize && !this.props.glued && 
                                 <DraggableCore

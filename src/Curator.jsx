@@ -55,16 +55,12 @@ export default class Curator extends React.Component {
     }
 
     render() {
-        // todo these will slow it down, need to move elsewhere
+        // todo move elsewhere
         this.syncItemProps()
         this.syncGridProps()
 
-        const className = this.props.onItemsChange 
-            ? this.props.className
-            : this.gridOptions.className
-
         return (
-            <div ref={ this.gridRef } className={ className }>
+            <div ref={ this.gridRef } className={ this.gridOptions.className }>
                 <div ref={ this.itemHolderRef } className="grid-item-holder" style={ this.getGridStyles() }>
                     {
                         this.state.readyToRenderChildren &&
@@ -80,9 +76,7 @@ export default class Curator extends React.Component {
             throw 'Curator received a child without a unique id. You must provide an id.'
 
         return (
-            <GridItem key={ child.props.id } { ...this.getGridItemProps( child ) }>
-                { child }
-            </GridItem>
+            <GridItem key={ child.props.id } { ...this.getGridItemProps( child ) } child={ child } />
         )
     }
 
@@ -185,6 +179,13 @@ export default class Curator extends React.Component {
 
     componentDidUpdate() {
         this.syncChildProps()
+
+        if ( this.gridSizingIsOutOfSyncWithProps() ) {
+            const { width, height } = this.gridOptions
+
+            this.updateGridSizing( width, height )
+            this.updateItemPositions()
+        }
     }
 
     // todo a lot of this should go in Core?
@@ -315,17 +316,6 @@ export default class Curator extends React.Component {
             this.gridItems = CuratorCore.getUpdatedGridSizeItems( this.gridItems, newGridOptions, this.gridSizing )
 
         this.gridOptions = newGridOptions
-
-        const { width, height } = newGridOptions
-
-        // optional override by props - allows resize handling
-        if ( width || height ) {
-            if ( this.gridSizingIsOutOfSyncWithProps() ) {
-                
-                this.updateGridSizing( width, height )
-                this.updateItemPositions()
-            }
-        }
     }
 
     updateGridSizing( optionalWidth, optionalHeight ) {
