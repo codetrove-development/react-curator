@@ -1,19 +1,28 @@
 {
   "name": "react-curator",
-  "version": "1.0.4-alpha",
+  "version": "1.0.0",
   "description": "React Draggable Grid using Snapper Core library",
   "main": "index.js",
   "unpkg": "dist/react-curator.min.js",
   "scripts": {
     "build-dev": "webpack --mode development",
-    "build-prod": "webpack --mode production"
+    "build-prod": "webpack --mode production",
+    "test": "jest"
+  },
+  "jest": {
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ],
+    "setupFiles": [
+      "./test/setup-tests.js"
+    ]
   },
   "prepublish": "webpack --mode production",
   "author": "Code Trove Limited",
   "license": "Code Trove Product License",
   "package-name": "git+ssh://git@github.com:codetrove-development/react-curator<repo>.git",
   "dependencies": {
-    "curator-core": "^1.0.2-alpha",
+    "curator-core": "^1.0.6-beta",
     "react": "^16.5.2",
     "react-dom": "^16.2.0",
     "react-draggable": "^3.0.5"
@@ -24,11 +33,20 @@
   "devDependencies": {
     "@babel/core": "^7.1.2",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-env": "^7.4.2",
     "@babel/preset-react": "^7.0.0",
+    "babel-jest": "^24.5.0",
     "babel-loader": "^8.0.4",
-    "webpack": "4.19.1",
-    "webpack-cli": "^2.1.4",
+    "enzyme": "^3.9.0",
+    "enzyme-adapter-react-16": "^1.11.2",
+    "enzyme-to-json": "^3.3.5",
+    "jest": "^24.5.0",
+    "react-test-renderer": "^16.8.6",
+    "sinon": "^7.3.1",
+    "sticky-algo-curator": "^1.0.3-beta",
+    "uglifyjs-webpack-plugin": "^2.1.1",
+    "webpack": "^4.29.5",
+    "webpack-cli": "^3.2.3",
     "webpack-merge": "^4.2.1"
   },
   "files": [

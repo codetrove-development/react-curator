@@ -1,8 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-//import SnappyGrid from 'snappy-grid-react'
-import Algo from 'snappy-algo'
-import SnappyGrid from '../src/SnappyGrid.jsx'
+import Algo from 'sticky-algo-curator'
+import Curator from '../src/Curator.jsx'
 
 import './index.css'
 
@@ -14,17 +13,24 @@ const newGridItem = ( key, x, y, width, height ) => {
     y,
     width,
     height,
-    classes: [ 'grid-item' ]
+    className: 'grid-item'
   }
 }
 
 class RenderedChild extends React.Component {
   render() {
-    const { id } = this.props
-
-    console.log(`[${ id }]: I rendered!`)
-    
-    return ( <span>Item { id }</span>
+    const { id, meta, x, y, width, height } = this.props
+    const { isDragging, isResizing } = meta
+    // console.log(`[${ id }]: I rendered!`) 
+                    
+    return ( 
+      <div>
+        <div><span>{ x }, { y }</span></div>
+        <div>Item { id }</div>
+        <div><span>{ width }, { height }</span></div>
+        { isDragging && <div>Dragging</div> }
+        { isResizing && <div>Resizing</div> }
+      </div>
     )
   }
 }
@@ -57,8 +63,8 @@ class App extends React.Component {
     const { items } = this.state
 
     const Grid = (
-      <SnappyGrid className="snapper-grid" 
-        onItemsChange={ ( items ) => this.onItemsChange( items ) } 
+      <Curator className="curator-grid" 
+        onItemsChange={ ( items, callback ) => this.onItemsChange( items, callback ) } 
         onGridPropsChange={ (options ) => this.onGridPropsChange( options ) }
         gridOptions={ this.state.gridOptions }
         width={ this.state.width }
@@ -69,7 +75,7 @@ class App extends React.Component {
             <RenderedChild key={ item.id } { ...item } /> 
           ) )
         }
-      </SnappyGrid>
+      </Curator>
     )
 
     return Grid
@@ -96,10 +102,10 @@ class App extends React.Component {
     )
   }
 
-  // this will work in a later version - placeholder. for now snapper only works 
+  // for now snapper only works 
   // with a percentage width. Get in touch if this is something you need asap
   componentDidMount() {
-    if ( window ) {
+    if ( typeof window === 'object' ) {
       window.addEventListener( 'resize', this.setSizing )
     }
 
@@ -107,7 +113,7 @@ class App extends React.Component {
   }
 
   componentWillUnmount() {
-    if ( window ) {
+    if ( typeof window === 'object' ) {
       window.removeEventListener( 'resize', this.setSizing )
     }
   }
@@ -128,7 +134,7 @@ class App extends React.Component {
     })
   }
 
-  onItemsChange( itemsToUpdate ) {
+  onItemsChange( itemsToUpdate, callback ) {
     const items = this.state.items.map(i => {
       const update = itemsToUpdate.find(ui => ui.id == i.id)
 
@@ -144,17 +150,19 @@ class App extends React.Component {
 
     this.setState({
       items
-    })
+    }, callback)
   }
 
   // to add another grid item, simply update your state
   // like you would any other collection
   onAddItemClick( e ) {
-    const { items } = this.state
-    const count = items.length
+    const count = this.state.items.length
     const key = count + 1
 
-    items.push( newGridItem( key, 1, 1, 1, 1 ))
+    const items = [
+      ...this.state.items,
+      newGridItem( key, 1, 1, 1, 1, 'grid-item' )
+    ]
 
     this.setState({
       items
