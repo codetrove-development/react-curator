@@ -1,6 +1,6 @@
 {
   "name": "react-curator",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "React Draggable Grid using Snapper Core library",
   "main": "index.js",
   "unpkg": "dist/react-curator.min.js",
@@ -30,7 +30,11 @@
   "bugs": {
     "url": "https://github.com/codetrove-development/react-curator/issues"
   },
-  "homepage": "https://github.com/codetrove-development/react-curator",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com/codetrove-development/react-curator"
+  },
+  "homepage": "https://codetrove.co.uk",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
