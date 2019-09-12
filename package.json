@@ -1,6 +1,6 @@
 {
   "name": "react-curator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "React Draggable Grid using Snapper Core library",
   "main": "index.js",
   "unpkg": "dist/react-curator.min.js",
@@ -22,7 +22,7 @@
   "license": "Code Trove Product License",
   "package-name": "git+ssh://git@github.com:codetrove-development/react-curator<repo>.git",
   "dependencies": {
-    "curator-core": "^1.0.0",
+    "curator-core": "^1.0.2",
     "react": "^16.5.2",
     "react-dom": "^16.2.0",
     "react-draggable": "^3.0.5"
@@ -43,7 +43,7 @@
     "jest": "^24.5.0",
     "react-test-renderer": "^16.8.6",
     "sinon": "^7.3.1",
-    "sticky-algo-curator": "^1.0.3-beta",
+    "sticky-algo-curator": "^1.0.1",
     "uglifyjs-webpack-plugin": "^2.1.1",
     "webpack": "^4.29.5",
     "webpack-cli": "^3.2.3",
